@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAPER HOUSE INC.</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<script src="//libtl.com/sdk.js" data-zone="10276123" data-sdk="show_10276123"></script>
+</head>
+<body>
+
+<h1>🌟 PAPER HOUSE INC. 🌟</h1>
+
+<div id="dashboard"></div>
+
+<div class="buttons">
+    <button onclick="watchAllAds()">🎬 Watch All Ads (1 Session) +₱0.03</button>
+    <button onclick="withdraw()">💸 Withdraw</button>
+    <button onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+    <button onclick="window.location.href='withdraw.html'">💰 Withdrawal History</button>
+    <button onclick="showAdminPanel()">🔒 Admin Panel</button>
+</div>
+
+<div id="admin-panel" style="display:none; margin-top:20px; border:2px solid #ffcc00; padding:10px;">
+    <h2>⚡ Admin Withdrawal Panel ⚡</h2>
+    <div id="withdraw-requests"></div>
+</div>
+
+<!-- Notification container -->
+<div id="notification-container" style="position: fixed; top: 20px; right: 0; z-index: 9999;"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
