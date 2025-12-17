@@ -2,27 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>YouTube Mini App Player</title>
+  <title>Top World YouTube Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
 </head>
 <body>
 
-  <div class="app">
-    <h2>▶ YouTube Player</h2>
+<div class="app">
 
-    <input
-      type="text"
-      id="ytUrl"
-      placeholder="Paste YouTube link here"
-    />
+  <!-- Player on top -->
+  <div id="player" class="player-box"></div>
 
-    <button id="playBtn">Play Video</button>
+  <h2>🌍 Top World YouTube Player</h2>
 
-    <div id="playerBox"></div>
-  </div>
+  <!-- Upload YouTube link -->
+  <input id="ytUpload" placeholder="Paste YouTube link to upload" />
+  <button onclick="uploadVideo()">⬆ Upload & Add</button>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="app.js"></script>
+  <!-- Table of links -->
+  <h3>🏆 Global Top Video List</h3>
+  <table id="topTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Video</th>
+        <th>Plays</th>
+        <th>Last Played</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <p class="hint">
+    Upload videos, play or next, global sync included
+  </p>
+
+</div>
+
+<!-- Telegram Mini App -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- YouTube API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<!-- App logic -->
+<script type="module" src="app.js"></script>
+
 </body>
 </html>
