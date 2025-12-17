@@ -1,10 +1,10 @@
 {
-  "name": "YouTube Telegram Mini App",
-  "short_name": "YT Player",
-  "description": "Telegram Mini App YouTube player using official embed",
+  "name": "Top World YouTube Player",
+  "short_name": "YT World",
+  "description": "Global synced YouTube player with upload & ranking table",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#0a0f1f",
   "theme_color": "#2563eb",
   "orientation": "portrait"
 }
