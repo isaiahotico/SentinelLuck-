@@ -98,3 +98,202 @@
                     <li>No videos yet. Add some!</li>
                 </ul>
             </div>
+            <button id="resetPlaylistBtn" class="gold-button home-button">
+                <span class="button-icon">🔄</span> Reset & Clear Playlist
+            </button>
+        </main>
+
+        <!-- Profile Page -->
+        <section id="profilePage" class="page">
+            <h2>Your Global Profile</h2>
+            <div class="profile-details">
+                <label for="userNameInput">Elite Name:</label>
+                <input type="text" id="userNameInput" placeholder="Enter your name">
+                <p>Total Global Streams Viewed: <span id="totalViewsCount">0</span></p>
+                <p>Current Balance: <span class="coin-icon">💰</span> <span id="profilePesoBalance">0.000</span> PHP</p>
+            </div>
+
+            <h3>Your Stream History:</h3>
+            <ul id="profileVideoList" class="profile-playlist-display scrollable-content">
+                <!-- Profile video list will be injected here -->
+                <li>No streams viewed yet.</li>
+            </ul>
+
+            <button id="backToPlayerBtn" class="gold-button home-button">
+                <span class="button-icon">◀️</span> Back to Player
+            </button>
+        </section>
+
+        <!-- Leaderboard Page -->
+        <section id="leaderboardPage" class="page">
+            <h2>GlobalStream: Top 20 Trending Streams</h2>
+            <div class="leaderboard-controls">
+                <select id="leaderboardCategoryFilter" class="small-select">
+                    <option value="mostPopular">Trending (Global)</op            <button id="resetPlaylistBtn" class="gold-button home-button">
+                <span class="button-icon">🔄</span> Reset & Clear Playlist
+            </button>
+        </main>
+
+        <!-- Profile Page -->
+        <section id="profilePage" class="page">
+            <h2>Your Global Profile</h2>
+            <div class="profile-details">
+                <label for="userNameInput">Elite Name:</label>
+                <input type="text" id="userNameInput" placeholder="Enter your name">
+                <p>Total Global Streams Viewed: <span id="totalViewsCount">0</span></p>
+                <p>Current Balance: <span class="coin-icon">💰</span> <span id="profilePesoBalance">0.000</span> PHP</p>
+            </div>
+
+            <h3>Your Stream History:</h3>
+            <ul id="profileVideoList" class="profile-playlist-display scrollable-content">
+                <!-- Profile video list will be injected here -->
+                <li>No streams viewed yet.</li>
+            </ul>
+
+            <button id="backToPlayerBtn" class="gold-button home-button">
+                <span class="button-icon">◀️</span> Back to Player
+            </button>
+        </section>
+
+        <!-- Leaderboard Page -->
+        <section id="leaderboardPage" class="page">
+            <h2>GlobalStream: Top 20 Trending Streams</h2>
+            <div class="leaderboard-controls">
+                <select id="leaderboardCategoryFilter" class="small-select">
+                    <option value="mostPopular">Trending (Global)</option>
+                    <!-- Additional categories can be added here with their YouTube API category IDs -->
+                    <!-- Example: <option value="10">Music</option> -->
+                    <!-- To find category IDs: https://developers.google.com/youtube/v3/docs/videoCategories/list -->
+                </select>
+                <button id="refreshLeaderboardBtn" class="gold-button small-button">
+                    <span class="button-icon">🔄</span> Refresh
+                </button>
+            </div>
+            <div id="leaderboardLoadingOverlay" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <p>Fetching Top Streams...</p>
+            </div>
+            <ul id="leaderboardList" class="leaderboard-list scrollable-content">
+                <!-- Leaderboard items will be injected here -->
+                <li class="empty-message">Loading top videos...</li>
+            </ul>
+            <button id="backToPlayerFromLeaderboardBtn" class="gold-button home-button">
+                <span class="button-icon">◀️</span> Back to Player
+            </button>
+        </section>
+
+        <!-- Withdrawal Room Page -->
+        <section id="withdrawalRoomPage" class="page">
+            <h2>Withdrawal Room</h2>
+            <div class="withdrawal-form">
+                <p>Current Balance: <span class="coin-icon">💰</span> <span id="withdrawalBalance">0.000</span> PHP</p>
+                <label for="gcashNumberInput">GCash Number:</label>
+                <input type="text" id="gcashNumberInput" placeholder="e.g., 09xxxxxxxxx" maxlength="11" pattern="09[0-9]{9}" title="Enter a valid 11-digit GCash number starting with 09">
+                <label for="withdrawalAmountInput">Amount to Withdraw (PHP):</label>
+                <input type="number" id="withdrawalAmountInput" placeholder="e.g., 50.00" min="0.01">
+                <button id="submitWithdrawalBtn" class="gold-button">
+                    <span class="button-icon">✅</span> Submit Withdrawal Request
+                </button>
+                <p class="form-message" id="withdrawalFormMessage"></p>
+            </div>
+
+            <h3>Your Withdrawal History:</h3>
+            <div class="table-container scrollable-content">
+                <table id="withdrawalHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- User's withdrawal history will be injected here -->
+                    </tbody>
+                </table>
+                <p class="empty-message" id="emptyWithdrawalHistoryMessage">No withdrawal history.</p>
+            </div>
+            <button id="backToPlayerFromWithdrawalBtn" class="gold-button home-button">
+                <span class="button-icon">◀️</span> Back to Player
+            </button>
+        </section>
+
+        <!-- Administrator Panel Page -->
+        <section id="adminPage" class="page">
+            <h2>Administrator Panel</h2>
+            <div id="adminLogin" class="admin-login-form">
+                <label for="adminPasswordInput">Admin Password:</label>
+                <input type="password" id="adminPasswordInput" placeholder="Enter password">
+                <button id="adminLoginBtn" class="gold-button">
+                    <span class="button-icon">🔑</span> Login
+                </button>
+                <p class="form-message error-message" id="adminLoginMessage"></p>
+            </div>
+
+            <div id="adminContent" class="admin-content hidden">
+                <h3>Pending Withdrawal Requests:</h3>
+                <div class="table-container scrollable-content">
+                    <table id="pendingWithdrawalsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>GCash #</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Pending requests will be injected here -->
+                        </tbody>
+                    </table>
+                    <p class="empty-message" id="emptyPendingWithdrawalsMessage">No pending requests.</p>
+                </div>
+
+                <h3>All Withdrawal History:</h3>
+                <div class="table-container scrollable-content">
+                    <table id="allWithdrawalsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>GCash #</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- All history will be injected here -->
+                        </tbody>
+                    </table>
+                    <p class="empty-message" id="emptyAllWithdrawalsMessage">No withdrawal history.</p>
+                </div>
+                <button id="adminLogoutBtn" class="gold-button home-button">
+                    <span class="button-icon">🚪</span> Logout
+                </button>
+            </div>
+            <button id="backToPlayerFromAdminBtn" class="gold-button home-button">
+                <span class="button-icon">◀️</span> Back to Player
+            </button>
+        </section>
+        
+        <footer id="appFooter">
+            <p><span id="currentDateTime"></span></p>
+            <p>otico.isai3@gmail.com | &copy;2025</p>
+        </footer>
+    </div>
+
+    <!-- UI Sound Effects (You need to provide these MP3 files in assets/sounds/) -->
+    <audio id="clickSound" src="assets/sounds/click.mp3" preload="auto"></audio>
+    <audio id="rewardSound" src="assets/sounds/reward.mp3" preload="auto"></audio>
+    <audio id="errorSound" src="assets/sounds/error.mp3" preload="auto"></audio>
+
+    <!-- YouTube IFrame Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Firebase SDKs -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
