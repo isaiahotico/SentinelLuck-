@@ -1,35 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>YouTube Mini-App with Random Video</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8" />
+  <title>YouTube Mini App Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>YouTube Mini-App</h1>
-    <p>Realtime · Firestore · Random Video</p>
-  </header>
 
-  <main>
-    <section class="input-section">
-      <textarea id="youtubeInput" placeholder="Paste YouTube links here"></textarea>
-      <button id="nextVideoBtn">▶ Next Random Video</button>
-    </section>
+  <div class="app">
+    <h2>▶ YouTube Player</h2>
 
-    <section class="list-section">
-      <h2>Videos Pasted by Users</h2>
-      <div id="previewContainer"></div>
-    </section>
-  </main>
+    <input
+      type="text"
+      id="ytUrl"
+      placeholder="Paste YouTube link here"
+    />
 
-  <footer>
-    <small>Powered by Firebase Firestore & YouTube IFrame API</small>
-  </footer>
+    <button id="playBtn">Play Video</button>
 
-  <script type="module" src="app.js"></script>
+    <div id="playerBox"></div>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
