@@ -1,15 +1,10 @@
 {
-  "name": "YouTube Mini-App with Random Video",
-  "short_name": "YT Random",
-  "start_url": ".",
+  "name": "YouTube Telegram Mini App",
+  "short_name": "YT Player",
+  "description": "Telegram Mini App YouTube player using official embed",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
-  "icons": [
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "orientation": "portrait"
 }
