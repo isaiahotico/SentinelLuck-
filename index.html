@@ -1,55 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Top World YouTube Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GlobalStream: Elite YouTube Access</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <div id="app">
+        <header>
+            <div id="coinDisplay">
+                <span class="coin-icon">💰</span>
+                <span id="pesoBalance">0.000</span>
+                <span class="currency">PHP</span>
+            </div>
+        </header>
 
-<div class="app">
+        <main id="playerPage" class="page active">
+            <h1>GlobalStream: Your Elite Media Hub</h1>
+            <p class="tagline">Curated Playback. Seamless Experience. Global Reach.</p>
 
-  <!-- Player on top -->
-  <div id="player" class="player-box"></div>
+            <div class="player-container">
+                <div id="player"></div>
+                <div id="countdownOverlay">
+                    <span id="countdownText">60</span>s to next stream
+                </div>
+            </div>
 
-  <h2>🌍 Top World YouTube Player</h2>
+            <div class="player-controls">
+                <button id="playBtn" class="gold-button control-button">
+                    <span class="button-icon">▶️</span> Play
+                </button>
+                <button id="nextBtn" class="gold-button control-button">
+                    <span class="button-icon">⏭️</span> Next Stream
+                </button>
+            </div>
 
-  <!-- Upload YouTube link -->
-  <input id="ytUpload" placeholder="Paste YouTube link to upload" />
-  <button onclick="uploadVideo()">⬆ Upload & Add</button>
+            <div class="add-url-section">
+                <input type="text" id="youtubeUrlInput" placeholder="Enter YouTube URL (e.g., https://youtu.be/dQw4w9WgXcQ)">
+                <button id="addUrlBtn" class="gold-button">
+                    <span class="button-icon">➕</span> Add to Playlist
+                </button>
+            </div>
+            
+            <div class="playlist-section">
+                <h3>Your Curated Playlist:</h3>
+                <ul id="userPlaylistDisplay">
+                    <!-- Playlist items will be injected here -->
+                    <li>No videos yet. Add some!</li>
+                </ul>
+            </div>
 
-  <!-- Table of links -->
-  <h3>🏆 Global Top Video List</h3>
-  <table id="topTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Video</th>
-        <th>Plays</th>
-        <th>Last Played</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+            <button id="returnHomeBtn" class="gold-button home-button">
+                <span class="button-icon">🔄</span> Reset & Clear Playlist
+            </button>
+        </main>
+        
+        <footer id="appFooter">
+            <p><span id="currentDateTime"></span></p>
+            <p>otico.isai3@gmail.com | &copy;2025</p>
+        </footer>
+    </div>
 
-  <p class="hint">
-    Upload videos, play or next, global sync included
-  </p>
-
-</div>
-
-<!-- Telegram Mini App -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- YouTube API -->
-<script src="https://www.youtube.com/iframe_api"></script>
-
-<!-- App logic -->
-<script type="module" src="app.js"></script>
-
+    <!-- YouTube IFrame Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="app.js"></script>
 </body>
 </html>
