@@ -1,203 +1,164 @@
-// Constants
-const MIN_WITHDRAW = 1;
-const SESSION_REWARD = 0.03;
-const SESSION_COOLDOWN = 30;
-const ADMIN_PASSWORD = "Propetas6";
-const MAX_APPROVED_DISPLAY = 10;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  onSnapshot,
+  getDocs,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// User initialization
-let user = JSON.parse(localStorage.getItem('paperHouseUser'));
-if(!user){
-    let username = prompt("Enter your username:", "User") || "User";
-    let userCode = prompt("Create your permanent code (random string):");
-    let referrer = prompt("Enter referral code (if any):") || null;
-    user = {
-        username,
-        code: userCode,
-        balance: 0,
-        adsWatched: 0,
-        referrer: referrer,
-        totalAffiliateBonus: 0,
-        lastSession: 0,
-        withdrawHistory: []
-    };
-    localStorage.setItem('paperHouseUser', JSON.stringify(user));
+/* =========================
+   🔥 FIREBASE CONFIG
+========================= */
+const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_FIREBASE_PROJECT.firebaseapp.com",
+  projectId: "YOUR_FIREBASE_PROJECT_ID",
+  storageBucket: "YOUR_FIREBASE_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_FIREBASE_SENDER_ID",
+  appId: "YOUR_FIREBASE_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* =========================
+   👤 USER INFO
+========================= */
+const USER_ID =
+  window.Telegram?.WebApp?.initDataUnsafe?.user?.id?.toString() || "guest";
+const USER_NAME =
+  window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "Guest";
+
+/* =========================
+   🎯 DOM ELEMENTS
+========================= */
+const input = document.getElementById("youtubeInput");
+const previewContainer = document.getElementById("previewContainer");
+const nextBtn = document.getElementById("nextVideoBtn");
+
+/* =========================
+   🔗 YOUTUBE UTILITIES
+========================= */
+function extractVideoId(url) {
+  const reg =
+    /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^\s&?/]+)/;
+  const match = url.match(reg);
+  return match ? match[1] : null;
 }
 
-// Save user
-function saveUser(){ localStorage.setItem('paperHouseUser', JSON.stringify(user)); }
-
-// Dashboard
-function updateDashboard(){
-    const dash = document.getElementById('dashboard');
-    const now = Date.now();
-    const remaining = Math.max(0, Math.ceil((SESSION_COOLDOWN*1000 - (now - user.lastSession))/1000));
-    dash.innerHTML = `
-╔════════════════════╗<br>
-║     PAPER HOUSE INC. ║<br>
-╚════════════════════╝<br>
-User: ${user.username}<br>
-Code: ${user.code}<br>
-💰 Balance: ₱${user.balance.toFixed(3)}<br>
-🎯 Ads Watched: ${user.adsWatched}<br>
-🧾 Total Affiliate Bonus: ₱${user.totalAffiliateBonus.toFixed(3)}<br>
-Cooldown: ${remaining>0?remaining+"s":"Ready"}<br>
-`;
-    updateLeaderboard();
-    renderAdminRequests();
+/* =========================
+   ☁️ FIRESTORE FUNCTIONS
+========================= */
+async function saveVideo(videoId, title) {
+  await setDoc(doc(db, "videos", videoId), {
+    title,
+    userId: USER_ID,
+    username: USER_NAME,
+    createdAt: serverTimestamp()
+  });
 }
 
-// Watch all ads
-function watchAllAds(){
-    const now = Date.now();
-    if(now - user.lastSession < SESSION_COOLDOWN*1000){
-        alert(`⏳ Cooldown active. Wait ${Math.ceil((SESSION_COOLDOWN*1000-(now-user.lastSession))/1000)}s`);
-        return;
-    }
-
-    Promise.all([
-        show_10276123(),
-        show_10276123('pop'),
-        show_10276123({ type:'inApp', inAppSettings:{ frequency:2, capping:0.1, interval:30, timeout:5, everyPage:false } })
-    ]).then(()=>{
-        user.balance += SESSION_REWARD;
-        user.adsWatched += 3;
-        user.lastSession = Date.now();
-
-        // Referral bonus
-        if(user.referrer){
-            let allUsers = JSON.parse(localStorage.getItem('allPaperUsers')) || {};
-            if(allUsers[user.referrer]){
-                allUsers[user.referrer].balance += SESSION_REWARD*0.10;
-                allUsers[user.referrer].totalAffiliateBonus += SESSION_REWARD*0.10;
-            }
-            localStorage.setItem('allPaperUsers', JSON.stringify(allUsers));
-        }
-
-        saveUser();
-        alert(`✅ Session completed! +₱${SESSION_REWARD}`);
-        updateDashboard();
-    }).catch(()=>alert("Ad session failed."));
+async function getVideo(videoId) {
+  const snap = await getDoc(doc(db, "videos", videoId));
+  return snap.exists() ? snap.data().title : null;
 }
 
-// Withdraw request
-function withdraw(){
-    if(user.balance < MIN_WITHDRAW){
-        alert(`Minimum withdrawal is ₱${MIN_WITHDRAW}`);
-        return;
-    }
-    let amount = user.balance;
-    user.balance = 0;
-    user.lastSession = 0;
-    user.withdrawHistory.push({ amount, status:"Pending" });
+/* =========================
+   🎬 FETCH VIDEO TITLE
+========================= */
+const YT_API_KEY = "YOUR_YOUTUBE_API_KEY";
 
-    // Save global withdrawal requests
-    let allRequests = JSON.parse(localStorage.getItem('allWithdrawRequests')) || [];
-    allRequests.push({ username:user.username, amount, status:"Pending" });
-    localStorage.setItem('allWithdrawRequests', JSON.stringify(allRequests));
+async function fetchVideoTitle(videoId) {
+  const cached = await getVideo(videoId);
+  if (cached) return cached;
 
-    saveUser();
-    alert(`💸 Withdrawal requested! Amount: ₱${amount.toFixed(3)} (Admin approval required)`);
-    updateDashboard();
+  const res = await fetch(
+    `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${YT_API_KEY}`
+  );
+  const data = await res.json();
+
+  const title = data.items?.[0]?.snippet?.title || "Unknown Video";
+  await saveVideo(videoId, title);
+
+  return title;
 }
 
-// Leaderboard
-function updateLeaderboard(){
-    const lb = document.getElementById('leaderboard');
-    let allUsers = JSON.parse(localStorage.getItem('allPaperUsers')) || {};
-    allUsers[user.code] = user; // Save current user
-    localStorage.setItem('allPaperUsers', JSON.stringify(allUsers));
+/* =========================
+   🎥 RENDER VIDEO CARD
+========================= */
+async function renderVideo(videoId, username) {
+  const card = document.createElement("div");
+  card.className = "video-card";
 
-    if(lb){
-        let topUsers = Object.values(allUsers).sort((a,b)=>b.balance-a.balance).slice(0,10);
-        let html = "";
-        topUsers.forEach((u,i)=>html+=`${i+1}. ${u.username} - ₱${u.balance.toFixed(3)}<br>`);
-        lb.innerHTML = html;
-    }
+  const userDiv = document.createElement("div");
+  userDiv.className = "user-info";
+  userDiv.innerText = `Pasted by: ${username}`;
+
+  const titleDiv = document.createElement("div");
+  titleDiv.className = "title";
+  titleDiv.innerText = "Loading...";
+
+  const iframe = document.createElement("iframe");
+  iframe.width = "100%";
+  iframe.height = "200";
+  iframe.src = `https://www.youtube.com/embed/${videoId}`;
+  iframe.allowFullscreen = true;
+
+  card.append(userDiv, titleDiv, iframe);
+  previewContainer.appendChild(card);
+
+  const title = await fetchVideoTitle(videoId);
+  titleDiv.innerText = title;
 }
 
-// Admin Panel
-function showAdminPanel(){
-    let pass = prompt("Enter admin password:");
-    if(pass !== ADMIN_PASSWORD){
-        alert("❌ Wrong password!");
-        return;
-    }
-    document.getElementById('admin-panel').style.display = "block";
-    renderAdminRequests();
-}
+/* =========================
+   ⚡ REALTIME LISTENER
+========================= */
+onSnapshot(collection(db, "videos"), (snapshot) => {
+  previewContainer.innerHTML = "";
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    renderVideo(doc.id, data.username);
+  });
+});
 
-function renderAdminRequests(){
-    let requestsDiv = document.getElementById('withdraw-requests');
-    let allRequests = JSON.parse(localStorage.getItem('allWithdrawRequests')) || [];
-    if(allRequests.length===0){
-        requestsDiv.innerHTML = "No withdrawal requests yet.";
-        return;
-    }
-
-    let html = "";
-    allRequests.forEach((req,index)=>{
-        if(req.status==="Pending"){
-            html+=`${index+1}. ${req.username} - ₱${req.amount.toFixed(3)} 
-            <button onclick="approveRequest(${index})">✅ Approve</button>
-            <button onclick="rejectRequest(${index})">❌ Reject</button><br>`;
-        }else{
-            html+=`${index+1}. ${req.username} - ₱${req.amount.toFixed(3)} - ${req.status}<br>`;
-        }
+/* =========================
+   📥 INPUT HANDLER
+========================= */
+input.addEventListener("paste", () => {
+  setTimeout(() => {
+    const urls = input.value.split(/\s+/);
+    urls.forEach((url) => {
+      const id = extractVideoId(url);
+      if (id) fetchVideoTitle(id);
     });
-    requestsDiv.innerHTML = html;
+    input.value = "";
+  }, 50);
+});
+
+/* =========================
+   🎲 NEXT RANDOM VIDEO
+========================= */
+async function getRandomVideo() {
+  const snapshot = await getDocs(collection(db, "videos"));
+  const videos = snapshot.docs.map(doc => ({
+    id: doc.id,
+    username: doc.data().username
+  }));
+
+  if (videos.length === 0) return null;
+  const randomIndex = Math.floor(Math.random() * videos.length);
+  return videos[randomIndex];
 }
 
-function approveRequest(index){
-    let allRequests = JSON.parse(localStorage.getItem('allWithdrawRequests'));
-    allRequests[index].status = "Approved";
-    localStorage.setItem('allWithdrawRequests', JSON.stringify(allRequests));
+nextBtn.addEventListener("click", async () => {
+  const randomVideo = await getRandomVideo();
+  if (!randomVideo) return alert("No videos available.");
 
-    // Trigger notification for all users
-    showNotification(`${allRequests[index].username} withdrawal approved: ₱${allRequests[index].amount.toFixed(3)}`);
-
-    alert("✅ Withdrawal approved!");
-    renderAdminRequests();
-}
-
-function rejectRequest(index){
-    let allRequests = JSON.parse(localStorage.getItem('allWithdrawRequests'));
-    allRequests[index].status = "Rejected";
-    localStorage.setItem('allWithdrawRequests', JSON.stringify(allRequests));
-    alert("❌ Withdrawal rejected!");
-    renderAdminRequests();
-}
-
-// Notification
-function showNotification(message){
-    const container = document.getElementById('notification-container');
-    const div = document.createElement('div');
-    div.className = "notification";
-    div.innerText = message;
-    container.appendChild(div);
-
-    div.style.position = "fixed";
-    div.style.top = "20px";
-    div.style.right = "-300px";
-    div.style.background = "#ffcc00";
-    div.style.color = "#000";
-    div.style.padding = "10px 20px";
-    div.style.borderRadius = "5px";
-    div.style.zIndex = "9999";
-    div.style.whiteSpace = "nowrap";
-
-    let pos = 0;
-    const interval = setInterval(()=>{
-        pos += 10;
-        div.style.right = pos + "px";
-        if(pos > window.innerWidth + 300){
-            clearInterval(interval);
-            container.removeChild(div);
-        }
-    },20);
-}
-
-// Init
-saveUser();
-updateDashboard();
-setInterval(updateDashboard,1000);
+  previewContainer.innerHTML = "";
+  renderVideo(randomVideo.id, randomVideo.username);
+});
