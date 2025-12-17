@@ -1,0 +1,351 @@
+ss
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Pure gold shining bright background */
+    background: radial-gradient(circle at center, #FFEB3B 0%, #FFC107 50%, #FFD700 100%);
+    background-size: 200% 200%;
+    animation: goldShine 15s ease-in-out infinite alternate;
+    overflow-y: auto; /* Allow scrolling for content longer than viewport */
+    overflow-x: hidden;
+}
+
+@keyframes goldShine {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#app {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    width: 100%;
+    max-width: 450px; /* Slightly wider for better player display */
+    text-align: center;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 90vh; /* Make app container fill more height */
+    position: relative;
+    overflow: hidden; /* Ensure content stays within */
+}
+
+header {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+#coinDisplay {
+    background: linear-gradient(145deg, #FFD700, #DAA520);
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: 2px solid #fff;
+    white-space: nowrap; /* Keep content in one line */
+    margin: 0 auto 20px auto; /* Center and add margin below */
+}
+
+.coin-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+.currency {
+    margin-left: 5px;
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+h1 {
+    color: #DAA520;
+    font-size: 2.2em;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.tagline {
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* YouTube Player Specific Styles */
+.player-container {
+    position: relative;
+    width: 100%;
+    /* Calculate 16:9 aspect ratio for player */
+    padding-bottom: 56.25%; /* 9 / 16 * 100 */
+    margin-bottom: 20px;
+    background-color: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+#player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+}
+
+#countdownOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #FFD700;
+    font-size: 3em;
+    font-weight: bold;
+    border-radius: 10px;
+    pointer-events: none; /* Allows clicks to pass through to the player */
+    z-index: 5;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.3s ease-in-out;
+}
+#countdownOverlay.active {
+    opacity: 1;
+}
+#countdownText {
+    text-shadow: 0 0 10px rgba(255,215,0,0.8);
+}
+
+.player-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.add-url-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+#youtubeUrlInput {
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    width: calc(100% - 30px); /* Adjust for padding */
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+#youtubeUrlInput:focus {
+    border-color: #FFD700;
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.gold-button {
+    background: linear-gradient(145deg, #FFD700 0%, #FFA500 100%);
+    color: #8B4513; /* Darker text for contrast */
+    border: none;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+.gold-button:hover {
+    background: linear-gradient(145deg, #FFD700 0%, #FF8C00 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.gold-button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.control-button {
+    flex: 1; /* Make play/next buttons take equal space */
+}
+
+.button-icon {
+    margin-right: 10px;
+    font-size: 1.3em;
+}
+
+/* Playlist Section */
+.playlist-section {
+    margin-bottom: 30px;
+    text-align: left;
+    max-height: 200px; /* Limit height of playlist */
+    overflow-y: auto; /* Make it scrollable */
+    padding-right: 10px; /* Space for scrollbar */
+}
+.playlist-section::-webkit-scrollbar {
+    width: 8px;
+}
+.playlist-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.playlist-section::-webkit-scrollbar-thumb {
+    background: #FFD700;
+    border-radius: 10px;
+}
+.playlist-section::-webkit-scrollbar-thumb:hover {
+    background: #DAA520;
+}
+
+.playlist-section h3 {
+    color: #DAA520;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    text-align: center;
+}
+
+#userPlaylistDisplay {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: #FFF8DC;
+    border: 1px solid #FFD700;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+#userPlaylistDisplay li {
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    color: #555;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+#userPlaylistDisplay li:last-child {
+    border-bottom: none;
+}
+#userPlaylistDisplay li.active-video {
+    background-color: rgba(255, 215, 0, 0.1);
+    color: #DAA520;
+    font-weight: bold;
+    border-left: 5px solid #FFD700;
+}
+.video-title {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+.remove-video-btn {
+    background: none;
+    border: none;
+    color: #FF6347; /* Tomato */
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s ease;
+}
+.remove-video-btn:hover {
+    transform: scale(1.1);
+}
+
+
+/* Return Home Button */
+.home-button {
+    margin-top: 30px;
+    width: fit-content;
+    align-self: center; /* Center horizontally in flex column */
+}
+
+/* Footer Styles */
+#appFooter {
+    margin-top: auto; /* Pushes footer to the bottom of the flex container */
+    padding-top: 20px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    color: #777;
+    font-size: 0.85em;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    padding-bottom: 20px; /* Add some padding at the bottom */
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.05); /* Soft shadow for footer */
+    z-index: 10; /* Ensure footer is on top */
+    position: relative; /* For z-index to work against other content */
+    width: 100%; /* Ensure footer spans full width of #app */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+#appFooter p {
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+    #app {
+        border-radius: 0; /* Full width on very small screens */
+        min-height: 100vh;
+        padding: 15px;
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+    .gold-button {
+        font-size: 1.1em;
+        padding: 12px 20px;
+    }
+    #coinDisplay {
+        font-size: 1.3em;
+        padding: 8px 12px;
+    }
+    #appFooter {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    #countdownOverlay {
+        font-size: 2.5em;
+    }
+    .add-url-section {
+        flex-direction: row; /* Layout input and button side-by-side */
+        flex-wrap: wrap; /* Allow wrapping if space is tight */
+        gap: 5px;
+    }
+    #youtubeUrlInput {
+        flex-grow: 1; /* Allow input to take available space */
+        width: auto; /* Override calc(100% - 30px) */
+    }
+    .add-url-section .gold-button {
+        padding: 12px 15px;
+        font-size: 1em;
+        width: auto;
+    }
+    .add-url-section .button-icon {
+        margin-right: 5px;
+    }
+}
