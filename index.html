@@ -1,298 +1,116 @@
+Welcome Users
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GlobalStream: Elite YouTube Access</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAPERHOUSE INC</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Include Monetag Scripts here -->
+    <style>
+        :root {
+            --sky-blue: #87CEEB;
+            --yellow-green: #9ACD32;
+            --classical-yellow: #FFD700;
+        }
 
-    <!-- Monetag SDK for Ad Zone 1 -->
-    <script src='//libtl.com/sdk.js' data-zone='10276123' data-sdk='show_10276123' async></script>
-    <!-- Monetag SDK for Ad Zone 2 -->
-    <script src='//libtl.com/sdk.js' data-zone='10337795' data-sdk='show_10337795' async></script>
-    <!-- Monetag SDK for Ad Zone 3 -->
-    <script src='//libtl.com/sdk.js' data-zone='10337853' data-sdk='show_10337853' async></script>
-</head>
-<body>
-    <div id="app">
-        <header>
-            <div id="coinDisplay" class="hidden">
-                <span class="coin-icon">💰</span>
-                <span id="pesoBalance">0.000</span>
-                <span class="currency">PHP</span>
-            </div>
-            <div class="header-buttons-group">
-                <button id="viewProfileBtn" class="gold-button small-button hidden">
-                    <span class="button-icon">👤</span> Profile
-                </button>
-                <button id="leaderboardBtn" class="gold-button small-button hidden">
-                    <span class="button-icon">🏆</span> Leaderboard
-                </button>
-                <button id="withdrawalRoomBtn" class="gold-button small-button hidden">
-                    <span class="button-icon">💸</span> Withdraw
-                </button>
-                <button id="adminBtn" class="gold-button small-button hidden">
-                    <span class="button-icon">⚙️</span> Admin
-                </button>
-                <button id="logoutBtn" class="gold-button small-button hidden">
-                    <span class="button-icon">🚪</span> Logout
-                </button>
-            </div>
-        </header>
+        body {
+            margin: 0; font-family: sans-serif;
+            background-color: var(--sky-blue);
+            transition: background 0.5s; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
 
-        <!-- Authentication Page (New) -->
-        <section id="authPage" class="page active">
-            <h2>Welcome to GlobalStream</h2>
-            <p class="tagline">Sign in or create an account to start streaming and earning!</p>
-            <div class="auth-form">
-                <label for="emailInput">Email:</label>
-                <input type="email" id="emailInput" placeholder="your_email@example.com">
-                <label for="passwordInput">Password:</label>                <input type="password" id="passwordInput" placeholder="Enter your password">
-                <p class="form-message error-message" id="authMessage"></p>
-                <button id="loginBtn" class="gold-button">
-                    <span class="button-icon">🔑</span> Login
-                </button>
-                <button id="signupBtn" class="gold-button">
-                    <span class="button-icon">📝</span> Sign Up
-                </button>
-            </div>
-        </section>
+        .rainbow {
+            animation: rainbowBG 3s linear infinite;
+        }
+        @keyframes rainbowBG {
+            0% { background: #ffadad; } 20% { background: #ffd6a5; }
+            40% { background: #fdffb6; } 60% { background: #caffbf; }
+            80% { background: #9bf6ff; } 100% { background: #ffadad; }
+        }
 
-        <!-- Main Player Page -->
-        <main id="playerPage" class="page">
-            <h1>GlobalStream: Your Elite Media Hub</h1>
-            <p class="tagline">Curated Playback. Seamless Experience. Global Reach.</p>
-
-            <div class="player-container">
-                <div id="player"></div>
-                <div id="countdownOverlay">
-                    <span id="countdownText">60</span>s to next stream
-                </div>
-                <div id="adLoadingOverlay" class="hidden">
-                    <div class="spinner"></div>
-                    <p>Loading Exclusive Ads...</p>
-                </div>
-            </div>
-
-            <div class="player-controls">
-                <button id="playBtn" class="gold-button control-button">
-                    <span class="button-icon">▶️</span> Play
-                </button>
-                <button id="nextBtn" class="gold-button control-button">
-                    <span class="button-icon">⏭️</span> Next Stream
-                </button>
-            </div>
-
-            <div class="add-url-section">
-                <input type="text" id="youtubeUrlInput" placeholder="Enter YouTube URL (e.g., https://youtu.be/dQw4w9WgXcQ)">
-                <button id="addUrlBtn" class="gold-button">
-                    <span class="button-icon">➕</span> Add to Playlist
-                </button>
-            </div>
-            
-            <div class="playlist-section">
-                <h3>Your Curated Playlist:</h3>
-                <ul id="userPlaylistDisplay" class="scrollable-content">
-                    <!-- Playlist items will be injected here -->
-                    <li>No videos yet. Add some!</li>
-                </ul>
-            </div>
-            <button id="resetPlaylistBtn" class="gold-button home-button">
-                <span class="button-icon">🔄</span> Reset & Clear Playlist
-            </button>
-        </main>
-
-        <!-- Profile Page -->
-        <section id="profilePage" class="page">
-            <h2>Your Global Profile</h2>
-            <div class="profile-details">
-                <label for="userNameInput">Elite Name:</label>
-                <input type="text" id="userNameInput" placeholder="Enter your name">
-                <p>Total Global Streams Viewed: <span id="totalViewsCount">0</span></p>
-                <p>Current Balance: <span class="coin-icon">💰</span> <span id="profilePesoBalance">0.000</span> PHP</p>
-            </div>
-
-            <h3>Your Stream History:</h3>
-            <ul id="profileVideoList" class="profile-playlist-display scrollable-content">
-                <!-- Profile video list will be injected here -->
-                <li>No streams viewed yet.</li>
-            </ul>
-
-            <button id="backToPlayerBtn" class="gold-button home-button">
-                <span class="button-icon">◀️</span> Back to Player
-            </button>
-        </section>
-
-        <!-- Leaderboard Page -->
-        <section id="leaderboardPage" class="page">
-            <h2>GlobalStream: Top 20 Trending Streams</h2>
-            <div class="leaderboard-controls">
-                <select id="leaderboardCategoryFilter" class="small-select">
-                    <option value="mostPopular">Trending (Global)</op            <button id="resetPlaylistBtn" class="gold-button home-button">
-                <span class="button-icon">🔄</span> Reset & Clear Playlist
-            </button>
-        </main>
-
-        <!-- Profile Page -->
-        <section id="profilePage" class="page">
-            <h2>Your Global Profile</h2>
-            <div class="profile-details">
-                <label for="userNameInput">Elite Name:</label>
-                <input type="text" id="userNameInput" placeholder="Enter your name">
-                <p>Total Global Streams Viewed: <span id="totalViewsCount">0</span></p>
-                <p>Current Balance: <span class="coin-icon">💰</span> <span id="profilePesoBalance">0.000</span> PHP</p>
-            </div>
-
-            <h3>Your Stream History:</h3>
-            <ul id="profileVideoList" class="profile-playlist-display scrollable-content">
-                <!-- Profile video list will be injected here -->
-                <li>No streams viewed yet.</li>
-            </ul>
-
-            <button id="backToPlayerBtn" class="gold-button home-button">
-                <span class="button-icon">◀️</span> Back to Player
-            </button>
-        </section>
-
-        <!-- Leaderboard Page -->
-        <section id="leaderboardPage" class="page">
-            <h2>GlobalStream: Top 20 Trending Streams</h2>
-            <div class="leaderboard-controls">
-                <select id="leaderboardCategoryFilter" class="small-select">
-                    <option value="mostPopular">Trending (Global)</option>
-                    <!-- Additional categories can be added here with their YouTube API category IDs -->
-                    <!-- Example: <option value="10">Music</option> -->
-                    <!-- To find category IDs: https://developers.google.com/youtube/v3/docs/videoCategories/list -->
-                </select>
-                <button id="refreshLeaderboardBtn" class="gold-button small-button">
-                    <span class="button-icon">🔄</span> Refresh
-                </button>
-            </div>
-            <div id="leaderboardLoadingOverlay" class="loading-overlay hidden">
-                <div class="spinner"></div>
-                <p>Fetching Top Streams...</p>
-            </div>
-            <ul id="leaderboardList" class="leaderboard-list scrollable-content">
-                <!-- Leaderboard items will be injected here -->
-                <li class="empty-message">Loading top videos...</li>
-            </ul>
-            <button id="backToPlayerFromLeaderboardBtn" class="gold-button home-button">
-                <span class="button-icon">◀️</span> Back to Player
-            </button>
-        </section>
-
-        <!-- Withdrawal Room Page -->
-        <section id="withdrawalRoomPage" class="page">
-            <h2>Withdrawal Room</h2>
-            <div class="withdrawal-form">
-                <p>Current Balance: <span class="coin-icon">💰</span> <span id="withdrawalBalance">0.000</span> PHP</p>
-                <label for="gcashNumberInput">GCash Number:</label>
-                <input type="text" id="gcashNumberInput" placeholder="e.g., 09xxxxxxxxx" maxlength="11" pattern="09[0-9]{9}" title="Enter a valid 11-digit GCash number starting with 09">
-                <label for="withdrawalAmountInput">Amount to Withdraw (PHP):</label>
-                <input type="number" id="withdrawalAmountInput" placeholder="e.g., 50.00" min="0.01">
-                <button id="submitWithdrawalBtn" class="gold-button">
-                    <span class="button-icon">✅</span> Submit Withdrawal Request
-                </button>
-                <p class="form-message" id="withdrawalFormMessage"></p>
-            </div>
-
-            <h3>Your Withdrawal History:</h3>
-            <div class="table-container scrollable-content">
-                <table id="withdrawalHistoryTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- User's withdrawal history will be injected here -->
-                    </tbody>
-                </table>
-                <p class="empty-message" id="emptyWithdrawalHistoryMessage">No withdrawal history.</p>
-            </div>
-            <button id="backToPlayerFromWithdrawalBtn" class="gold-button home-button">
-                <span class="button-icon">◀️</span> Back to Player
-            </button>
-        </section>
-
-        <!-- Administrator Panel Page -->
-        <section id="adminPage" class="page">
-            <h2>Administrator Panel</h2>
-            <div id="adminLogin" class="admin-login-form">
-                <label for="adminPasswordInput">Admin Password:</label>
-                <input type="password" id="adminPasswordInput" placeholder="Enter password">
-                <button id="adminLoginBtn" class="gold-button">
-                    <span class="button-icon">🔑</span> Login
-                </button>
-                <p class="form-message error-message" id="adminLoginMessage"></p>
-            </div>
-
-            <div id="adminContent" class="admin-content hidden">
-                <h3>Pending Withdrawal Requests:</h3>
-                <div class="table-container scrollable-content">
-                    <table id="pendingWithdrawalsTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>User</th>
-                                <th>GCash #</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Pending requests will be injected here -->
-                        </tbody>
-                    </table>
-                    <p class="empty-message" id="emptyPendingWithdrawalsMessage">No pending requests.</p>
-                </div>
-
-                <h3>All Withdrawal History:</h3>
-                <div class="table-container scrollable-content">
-                    <table id="allWithdrawalsTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>User</th>
-                                <th>GCash #</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- All history will be injected here -->
-                        </tbody>
-                    </table>
-                    <p class="empty-message" id="emptyAllWithdrawalsMessage">No withdrawal history.</p>
-                </div>
-                <button id="adminLogoutBtn" class="gold-button home-button">
-                    <span class="button-icon">🚪</span> Logout
-                </button>
-            </div>
-            <button id="backToPlayerFromAdminBtn" class="gold-button home-button">
-                <span class="button-icon">◀️</span> Back to Player
-            </button>
-        </section>
+        header { background: rgba(255,255,255,0.3); padding: 15px; text-align: center; border-bottom: 2px solid #555; }
+        .balance-box { font-size: 24px; font-weight: bold; color: #2d5a27; }
         
-        <footer id="appFooter">
-            <p><span id="currentDateTime"></span></p>
-            <p>otico.isai3@gmail.com | &copy;2025</p>
-        </footer>
+        .container { padding: 20px; flex: 1; text-align: center; }
+        
+        .btn {
+            background-color: var(--yellow-green);
+            border: none; padding: 15px 20px; font-size: 16px;
+            font-weight: bold; border-radius: 10px; cursor: pointer;
+            margin: 10px; transition: 0.2s; box-shadow: 0 4px #6b8e23;
+        }
+        .btn:active { background-color: var(--classical-yellow) !important; transform: translateY(2px); box-shadow: 0 2px #6b8e23; }
+        
+        .task-card { background: white; padding: 15px; margin: 10px auto; border-radius: 15px; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .cooldown { color: red; font-size: 12px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+
+        .hidden { display: none; }
+        footer { background: #222; color: white; padding: 20px; text-align: center; font-size: 12px; }
+
+        #adminSection { background: #f0f0f0; border: 5px dashed red; padding: 10px; }
+    </style>
+</head>
+<body id="mainBody" onclick="this.classList.add('rainbow')">
+
+    <header>
+
+        <div id="userBar">👤 User: Loading...</div>
+        <div class="balance-box">₱<span id="userBalance">0.00</span></div>
+    </header>
+
+    <div id="homePage" class="container">
+        <h1>PAPERHOUSE INC</h1>
+        <button class="btn" onclick="showPage('adsArea')">🍍PAPERHOUSE ADS AREA🍍</button>
+        <button class="btn" onclick="showPage('withdrawPage')">💸 WITHDRAW GCASH</button>
+        <button class="btn" style="opacity: 0.3;" onclick="checkAdmin()">⚙️ OWNER</button>
     </div>
 
-    <!-- UI Sound Effects (You need to provide these MP3 files in assets/sounds/) -->
-    <audio id="clickSound" src="assets/sounds/click.mp3" preload="auto"></audio>
-    <audio id="rewardSound" src="assets/sounds/reward.mp3" preload="auto"></audio>
-    <audio id="errorSound" src="assets/sounds/error.mp3" preload="auto"></audio>
+    <!-- Ads Area -->
+    <div id="adsArea" class="container hidden">
+        <button onclick="showPage('homePage')">⬅ Back</button>
+        <h2>Tasks</h2>
+        <div id="taskList"></div>
+    </div>
 
-    <!-- YouTube IFrame Player API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Withdrawal Page -->
+    <div id="withdrawPage" class="container hidden">
+        <button onclick="showPage('homePage')">⬅ Back</button>
+        <h2>Withdraw to GCASH</h2>
+        <input type="text" id="gcashName" placeholder="GCash Name"><br><br>
+        <input type="text" id="gcashNum" placeholder="GCash Number"><br><br>
+        <input type="number" id="withdrawAmount" placeholder="Amount (min 0.50)"><br><br>
+        <button class="btn" onclick="requestWithdrawal()">Submit Request</button>
+        
+        <h3>My Withdrawals</h3>
+        <table id="userWithdrawTable">
+            <thead><tr><th>Amount</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminPage" class="container hidden">
+        <button onclick="showPage('homePage')">⬅ Close Admin</button>
+        <div id="adminSection">
+            <h2>OWNER DASHBOARD</h2>
+            <table id="adminTable">
+                <thead><tr><th>User</th><th>GCash</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <div id="footerText"></div>
+        PAPERHOUSE INC | otico.isai2@gmail.com
+    </footer>
+
     <!-- Firebase SDKs -->
     <script type="module" src="app.js"></script>
 </body>
