@@ -11,29 +11,28 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const increment = firebase.database.ServerValue.increment;
+const inc = firebase.database.ServerValue.increment;
 
-let currentUser = localStorage.getItem('ph_username');
+let currentUser = localStorage.getItem('paper_u');
 let uData = null;
-let admPage = 1;
 
-// Multi-Color Dynamic Background
-const themes = ['#FF0000','#00FF00','#0000FF','#FFD700','#FF1493','#1E90FF','#DA70D6','#FF00FF','#1ABC9C','#2ECC71','#3498DB','#9B59B6','#E67E22','#E74C3C','#D35400', 'url("https://www.transparenttextures.com/patterns/brick-wall.png")','url("https://www.transparenttextures.com/patterns/dark-brick-wall.png")'];
-function changeVibe() {
-    const b = document.getElementById('dynamic-bg');
+// Dynamic Theme
+const themes = ['#FF0000','#00FF00','#0000FF','#FFD700','#FF1493','#1E90FF','#DA70D6','#1ABC9C','#2ECC71','#3498DB','#9B59B6','#E67E22', 'url("https://www.transparenttextures.com/patterns/brick-wall.png")'];
+function changeTheme() {
+    const el = document.getElementById('main-bg');
     const t = themes[Math.floor(Math.random()*themes.length)];
-    if(t.includes('url')) { b.style.backgroundImage = t; b.style.backgroundColor = '#111'; }
-    else { b.style.backgroundImage = 'none'; b.style.backgroundColor = t; }
+    if(t.includes('url')) { el.style.backgroundImage = t; el.style.backgroundColor = '#111'; }
+    else { el.style.backgroundImage = 'none'; el.style.backgroundColor = t; }
 }
 
 // --- AUTH ---
-if(currentUser) initSession();
+if(currentUser) startSession();
 
-function fastAuth() {
-    const u = document.getElementById('log-u').value.trim().toLowerCase();
-    const g = document.getElementById('log-g').value.trim();
-    const r = document.getElementById('log-r').value.trim().toLowerCase();
-    if(!u || g.length < 10) return alert("Username & Valid GCash Required");
+function auth() {
+    const u = document.getElementById('in-user').value.trim().toLowerCase();
+    const g = document.getElementById('in-gcash').value.trim();
+    const r = document.getElementById('in-ref').value.trim().toLowerCase();
+    if(!u || g.length < 10) return alert("Valid Username & GCash required");
 
     db.ref('users/'+u).once('value', s => {
         if(!s.exists()) {
@@ -41,25 +40,25 @@ function fastAuth() {
                 username: u, gcash: g, balance: 0, adsCount: 0, totalAds: 0,
                 refBy: r || "", refCount: 0, refBonus: 0, lastActive: Date.now()
             }).then(() => {
-                if(r && r !== u) db.ref('users/'+r+'/refCount').set(increment(1));
+                if(r && r !== u) db.ref('users/'+r+'/refCount').set(inc(1));
             });
         }
-        localStorage.setItem('ph_username', u);
+        localStorage.setItem('paper_u', u);
         location.reload();
     });
 }
 
-function initSession() {
+function startSession() {
     db.ref('users/'+currentUser).on('value', s => {
         uData = s.val();
         if(!uData) return;
-        updateUI();
+        syncUI();
         document.getElementById('page-login').classList.remove('active');
         document.getElementById('page-home').classList.add('active');
-        document.getElementById('nav-bar').style.display = 'flex';
+        document.getElementById('navbar').style.display = 'flex';
     });
 
-    // Forced In-App Ad Configuration (Requested)
+    // In-App Interstitial Ad (Requested Config)
     const runInApp = () => {
         show_10337853({
             type: 'inApp',
@@ -67,82 +66,96 @@ function initSession() {
         });
     };
     runInApp(); 
-    setInterval(runInApp, 300000); // 5-minute trigger
+    setInterval(runInApp, 300000); // 5 minute cycle
 
     setInterval(() => db.ref('users/'+currentUser+'/lastActive').set(Date.now()), 30000);
-    setInterval(refreshCooldowns, 1000);
-    
-    checkWeeklyReset(); loadLB(); loadOnline(); loadChat(); loadWdHistory();
+    setInterval(tickCds, 1000);
+    checkReset(); loadLB(); loadOnline(); loadChat(); loadWd();
 }
 
-function updateUI() {
-    document.getElementById('bal-val').innerText = uData.balance.toFixed(4);
-    document.getElementById('ref-count-val').innerText = uData.refCount || 0;
-    document.getElementById('ref-bonus-val').innerText = "₱"+(uData.refBonus || 0).toFixed(4);
-    document.getElementById('ref-input').value = uData.refBy || "";
-    if(uData.refBy) document.getElementById('ref-input').disabled = true;
+function syncUI() {
+    document.getElementById('u-bal').innerText = uData.balance.toFixed(4);
+    document.getElementById('u-ref-c').innerText = uData.refCount || 0;
+    document.getElementById('u-ref-b').innerText = "₱"+(uData.refBonus || 0).toFixed(4);
+    document.getElementById('ref-binder').value = uData.refBy || "";
+    if(uData.refBy) document.getElementById('ref-binder').disabled = true;
 }
 
-// --- AD REWARD LOGIC (FIXED) ---
-async function watchAd(type) {
+// --- ADS & REWARDS (Fixed Crediting) ---
+async function playAd(type) {
     try {
         if(type === 'std') {
             await show_10337853();
-            processReward(0.01);
-            localStorage.setItem('last_std', Date.now());
+            addReward(0.01);
+            localStorage.setItem('cd_std', Date.now());
         } else {
             await show_10337853('pop');
-            processReward(0.0102);
-            localStorage.setItem('last_pre', Date.now());
+            addReward(0.0102);
+            localStorage.setItem('cd_pre', Date.now());
         }
-    } catch(err) { alert("Ad interrupted or blocked."); }
+    } catch(e) { alert("Ad Failed"); }
 }
 
-async function sendChat3Ads() {
+async function sendChat3() {
     const msg = document.getElementById('chat-input').value.trim();
     if(!msg) return;
-    if(Date.now() - (localStorage.getItem('last_chat')||0) < 300000) return alert("Cooldown Active!");
+    if(Date.now() - (localStorage.getItem('cd_chat') || 0) < 300000) return alert("Wait for cooldown");
 
-    alert("Watching 3 Ads to send message...");
+    alert("Watch 3 ads to Send & Earn...");
     try {
         await show_10337853(); await show_10337853(); await show_10337853();
         db.ref('chat').push({ u: currentUser, m: msg, t: Date.now() });
-        processReward(0.015);
-        localStorage.setItem('last_chat', Date.now());
+        addReward(0.015);
+        localStorage.setItem('cd_chat', Date.now());
         document.getElementById('chat-input').value = "";
-    } catch(e) { alert("Failed to load all ads."); }
+    } catch(e) { alert("Ad incomplete"); }
 }
 
-function processReward(amt) {
-    const updates = {};
-    updates[`users/${currentUser}/balance`] = increment(amt);
-    updates[`users/${currentUser}/adsCount`] = increment(1);
-    updates[`users/${currentUser}/totalAds`] = increment(1);
-    
-    db.ref().update(updates);
-
-    // Referral 8% commission
-    if(uData.refBy) {
-        db.ref('users/'+uData.refBy+'/refBonus').set(increment(amt * 0.08));
-    }
-    
-    showPopup(amt);
+function addReward(amt) {
+    db.ref('users/'+currentUser).update({
+        balance: inc(amt),
+        adsCount: inc(1),
+        totalAds: inc(1)
+    });
+    if(uData.refBy) db.ref('users/'+uData.refBy+'/refBonus').set(inc(amt * 0.08));
+    showPop(amt);
 }
 
-function showPopup(v) {
-    document.getElementById('toast-val').innerText = "₱"+v;
-    document.getElementById('reward-toast').style.display = 'block';
-    document.getElementById('toast-anim').className = "toast-box animate__animated animate__bounceIn";
-    setTimeout(() => document.getElementById('reward-toast').style.display = 'none', 2500);
+function showPop(v) {
+    document.getElementById('pop-v').innerText = "₱"+v;
+    document.getElementById('reward-popup').style.display = 'block';
+    document.getElementById('toast-anim').className = "reward-circle animate__animated animate__zoomIn";
+    setTimeout(() => document.getElementById('reward-popup').style.display='none', 2000);
 }
 
-// --- SYSTEM & LISTS ---
-function checkWeeklyReset() {
+// --- WALLET (Updated Min 1 Peso) ---
+function requestWd() {
+    const val = parseFloat(document.getElementById('wd-amt').value);
+    if(val >= 1.00 && uData.balance >= val) {
+        db.ref('withdrawals').push({
+            username: currentUser, gcash: uData.gcash, amount: val, status: 'pending', time: Date.now()
+        });
+        db.ref('users/'+currentUser+'/balance').set(inc(-val));
+        alert("Withdrawal Requested!");
+    } else alert("Insufficient balance or below ₱1.00");
+}
+
+function loadWd() {
+    db.ref('withdrawals').orderByChild('username').equalTo(currentUser).on('value', s => {
+        const b = document.getElementById('wd-history-body'); b.innerHTML = "";
+        s.forEach(c => {
+            const w = c.val();
+            b.innerHTML += `<tr><td>${new Date(w.time).toLocaleDateString()}</td><td>₱${w.amount}</td><td style="color:${w.status==='paid'?'#0f0':'orange'}">${w.status}</td></tr>`;
+        });
+    });
+}
+
+// --- SYSTEM ---
+function checkReset() {
     db.ref('system/lastReset').once('value', s => {
-        const last = s.val() || 0;
-        if(Date.now() - last > 604800000) {
-            db.ref('users').once('value', snapshot => {
-                snapshot.forEach(child => db.ref('users/'+child.key+'/adsCount').set(0));
+        if(Date.now() - (s.val()||0) > 604800000) {
+            db.ref('users').once('value', ss => {
+                ss.forEach(u => db.ref('users/'+u.key+'/adsCount').set(0));
                 db.ref('system/lastReset').set(Date.now());
             });
         }
@@ -150,117 +163,55 @@ function checkWeeklyReset() {
 }
 
 function loadLB() {
-    db.ref('users').orderByChild('adsCount').limitToLast(20).on('value', s => {
-        const list = document.getElementById('lb-list'); list.innerHTML = "";
+    db.ref('users').orderByChild('adsCount').limitToLast(15).on('value', s => {
+        const b = document.getElementById('lb-body'); b.innerHTML = "";
         let arr = []; s.forEach(c => arr.push(c.val()));
         arr.reverse().forEach(u => {
-            list.innerHTML += `<tr><td>${u.username}</td><td>${u.adsCount}</td><td>${u.totalAds}</td><td>₱${u.balance.toFixed(2)}</td></tr>`;
+            b.innerHTML += `<tr><td>${u.username}</td><td>${u.adsCount}</td><td>${u.totalAds}</td><td>₱${u.balance.toFixed(2)}</td></tr>`;
         });
     });
 }
 
 function loadOnline() {
     db.ref('users').on('value', s => {
-        const list = document.getElementById('online-users-list'); list.innerHTML = "";
+        const l = document.getElementById('online-list'); l.innerHTML = "";
         s.forEach(c => {
             if(Date.now() - c.val().lastActive < 120000) {
-                list.innerHTML += `<div style="padding:12px; border-bottom:1px solid #222; display:flex; justify-content:space-between;">
-                    <span>${c.val().username}</span><span style="color:#0f0">Active</span></div>`;
+                l.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; display:flex; justify-content:space-between;">
+                <span>${c.val().username}</span><span style="color:#0f0">Online</span></div>`;
             }
         });
     });
 }
 
-// --- WALLET ---
-function requestWd() {
-    const amt = parseFloat(document.getElementById('wd-amount').value);
-    if(amt >= 0.02 && uData.balance >= amt) {
-        db.ref('withdrawals').push({
-            username: currentUser, gcash: uData.gcash, amount: amt, status: 'pending', time: Date.now()
-        });
-        db.ref('users/'+currentUser+'/balance').set(increment(-amt));
-        alert("Requested successfully!");
-    } else alert("Insufficient balance or below min 0.02");
-}
-
-function loadWdHistory() {
-    db.ref('withdrawals').orderByChild('username').equalTo(currentUser).on('value', s => {
-        const body = document.getElementById('wd-history-list'); body.innerHTML = "";
-        s.forEach(c => {
-            const w = c.val();
-            body.innerHTML += `<tr><td>${new Date(w.time).toLocaleDateString()}</td><td>₱${w.amount}</td><td style="color:${w.status==='paid'?'#0f0':'orange'}">${w.status}</td></tr>`;
-        });
-    });
-}
-
-function bindRef() {
-    const code = document.getElementById('ref-input').value.trim().toLowerCase();
+// --- HELPERS ---
+function syncRef() {
+    const code = document.getElementById('ref-binder').value.trim().toLowerCase();
     if(code && code !== currentUser && !uData.refBy) {
         db.ref('users/'+code).once('value', s => {
             if(s.exists()){
                 db.ref('users/'+currentUser).update({ refBy: code });
-                db.ref('users/'+code+'/refCount').set(increment(1));
-                alert("Referrer Synced!");
+                db.ref('users/'+code+'/refCount').set(inc(1));
+                alert("Referrer updated!");
             }
         });
     }
 }
 
-function claimReferral() {
+function claimRef() {
     if(uData.refBonus > 0) {
-        db.ref('users/'+currentUser+'/balance').set(increment(uData.refBonus));
-        db.ref('users/'+currentUser+'/refBonus').set(0);
-        alert("Bonus claimed!");
+        db.ref('users/'+currentUser).update({ balance: inc(uData.refBonus), refBonus: 0 });
+        alert("Bonus Claimed!");
     }
 }
 
-// --- ADMIN ---
-function unlockAdmin() {
-    if(document.getElementById('adm-pass').value === "Propetas12") {
-        document.getElementById('adm-lock').style.display = 'none';
-        document.getElementById('adm-ui').style.display = 'block';
-        loadAdminData();
-    }
+function tickCds() {
+    updateBtn('cd_std', 'btn-std', 'cd-std', 120000);
+    updateBtn('cd_pre', 'btn-pre', 'cd-pre', 120000);
+    updateBtn('cd_chat', 'btn-chat', 'cd-chat', 300000);
 }
 
-function loadAdminData() {
-    db.ref('withdrawals').on('value', s => {
-        const pArea = document.getElementById('adm-pending-area');
-        const hArea = document.getElementById('adm-history-area');
-        let totalPaid = 0, hArr = []; pArea.innerHTML = "";
-        
-        s.forEach(c => {
-            let w = c.val(); w.id = c.key;
-            if(w.status === 'paid') { totalPaid += w.amount; hArr.push(w); }
-            else {
-                pArea.innerHTML += `<div class="adm-req">
-                    <b>USER: ${w.username}</b><br>GCash: ${w.gcash}<br>Amount: ₱${w.amount}<br>Date: ${new Date(w.time).toLocaleString()}<br>
-                    <button class="btn btn-gold" style="padding:6px; margin-top:8px; width:120px;" onclick="approveWd('${w.id}')">APPROVE</button>
-                </div>`;
-            }
-        });
-        document.getElementById('adm-total-p').innerText = totalPaid.toFixed(2);
-        
-        hArea.innerHTML = ""; hArr.reverse();
-        let start = (admPage-1)*10, end = admPage*10;
-        for(let i=start; i<end && i<hArr.length; i++) {
-            const d = hArr[i];
-            hArea.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; font-size:0.75rem;">
-                <b>${d.username}</b> | ₱${d.amount} | ${d.gcash} | ${new Date(d.time).toLocaleDateString()}</div>`;
-        }
-    });
-}
-function approveWd(id) { db.ref('withdrawals/'+id).update({status: 'paid'}); }
-function admPg(d) { admPage = Math.max(1, admPage+d); loadAdminData(); }
-
-// --- HELPERS ---
-function refreshCooldowns() {
-    updateTimer('last_std', 'btn-std', 'cd-std', 120000);
-    updateTimer('last_pre', 'btn-pre', 'cd-pre', 120000);
-    updateTimer('last_chat', 'btn-chat', 'cd-chat', 300000);
-}
-
-function updateTimer(key, bid, sid, limit) {
+function updateBtn(key, bid, sid, limit) {
     const rem = Math.max(0, limit - (Date.now() - (localStorage.getItem(key)||0)));
     const btn = document.getElementById(bid), span = document.getElementById(sid);
     if(rem > 0) {
@@ -279,10 +230,40 @@ function tab(id) {
 
 function loadChat() {
     db.ref('chat').limitToLast(20).on('value', s => {
-        const w = document.getElementById('chat-win'); w.innerHTML = "";
+        const w = document.getElementById('chat-window'); w.innerHTML = "";
         s.forEach(c => {
             const m = c.val(); w.innerHTML += `<div class="msg"><b>${m.u}:</b> ${m.m}</div>`;
         });
         w.scrollTop = w.scrollHeight;
     });
 }
+
+// --- ADMIN ---
+function admAuth() {
+    if(document.getElementById('adm-pass').value === "Propetas12") {
+        document.getElementById('adm-lock').style.display = 'none';
+        document.getElementById('adm-content').style.display = 'block';
+        loadAdm();
+    }
+}
+
+function loadAdm() {
+    db.ref('withdrawals').on('value', s => {
+        const pArea = document.getElementById('adm-pend'), hArea = document.getElementById('adm-hist');
+        let total = 0; pArea.innerHTML = ""; hArea.innerHTML = "";
+        s.forEach(c => {
+            const w = c.val(); w.id = c.key;
+            if(w.status === 'paid') {
+                total += w.amount;
+                hArea.innerHTML += `<div style="padding:10px; font-size:0.7rem; border-bottom:1px solid #333;">${w.username} | ₱${w.amount} | PAID</div>`;
+            } else {
+                pArea.innerHTML += `<div class="card" style="font-size:0.8rem;">
+                    <b>${w.username}</b> | ${w.gcash}<br>₱${w.amount} | ${new Date(w.time).toLocaleString()}<br>
+                    <button class="btn btn-gold" style="padding:5px; margin-top:5px; width:100px;" onclick="approve('${w.id}')">PAY</button>
+                </div>`;
+            }
+        });
+        document.getElementById('adm-total-p').innerText = total.toFixed(2);
+    });
+}
+function approve(id) { db.ref('withdrawals/'+id).update({status: 'paid'}); }
