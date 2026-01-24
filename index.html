@@ -6,7 +6,7 @@ Welcome Users
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PAPERHOUSE INC</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Include Monetag Scripts here -->
+    <!-- Placeholder for Monetag Scripts - Ensure your actual Monetag tags are here -->
     <style>
         :root {
             --sky-blue: #87CEEB;
@@ -15,14 +15,15 @@ Welcome Users
         }
 
         body {
-            margin: 0; font-family: sans-serif;
+            margin: 0; padding: 0; font-family: 'Arial', sans-serif;
             background-color: var(--sky-blue);
             transition: background 0.5s; min-height: 100vh;
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; overflow-x: hidden;
         }
 
-        .rainbow {
-            animation: rainbowBG 3s linear infinite;
+        /* Rainbow Animation */
+        body.rainbow-mode {
+            animation: rainbowBG 5s linear infinite;
         }
         @keyframes rainbowBG {
             0% { background: #ffadad; } 20% { background: #ffd6a5; }
@@ -30,88 +31,127 @@ Welcome Users
             80% { background: #9bf6ff; } 100% { background: #ffadad; }
         }
 
-        header { background: rgba(255,255,255,0.3); padding: 15px; text-align: center; border-bottom: 2px solid #555; }
-        .balance-box { font-size: 24px; font-weight: bold; color: #2d5a27; }
-        
-        .container { padding: 20px; flex: 1; text-align: center; }
+        header { background: rgba(255,255,255,0.2); padding: 15px; text-align: center; border-bottom: 2px solid rgba(0,0,0,0.1); }
+        #userBar { font-weight: bold; font-size: 1.1em; }
+        #balanceDisplay { font-size: 1.8em; color: #1b5e20; font-weight: 900; margin-top: 5px; }
+
+        .container { flex: 1; padding: 20px; text-align: center; }
         
         .btn {
             background-color: var(--yellow-green);
-            border: none; padding: 15px 20px; font-size: 16px;
-            font-weight: bold; border-radius: 10px; cursor: pointer;
-            margin: 10px; transition: 0.2s; box-shadow: 0 4px #6b8e23;
+            color: black; border: none; padding: 15px 20px;
+            font-size: 16px; font-weight: bold; border-radius: 12px;
+            cursor: pointer; margin: 10px; transition: 0.2s;
+            box-shadow: 0 4px #6b8e23; width: 80%; max-width: 300px;
         }
-        .btn:active { background-color: var(--classical-yellow) !important; transform: translateY(2px); box-shadow: 0 2px #6b8e23; }
-        
-        .task-card { background: white; padding: 15px; margin: 10px auto; border-radius: 15px; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .cooldown { color: red; font-size: 12px; }
+        .btn:active {
+            background-color: var(--classical-yellow) !important;
+            transform: translateY(3px);
+            box-shadow: 0 1px #6b8e23;
+        }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; font-size: 12px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        .card { background: white; padding: 15px; margin: 10px auto; border-radius: 15px; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        input { padding: 10px; width: 80%; margin: 5px 0; border-radius: 8px; border: 1px solid #ccc; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 10px; overflow: hidden; font-size: 12px; }        th, td { padding: 10px; border: 1px solid #eee; text-align: center; }
+        th { background: #333; color: white; }
 
         .hidden { display: none; }
-        footer { background: #222; color: white; padding: 20px; text-align: center; font-size: 12px; }
-
-        #adminSection { background: #f0f0f0; border: 5px dashed red; padding: 10px; }
+        footer { background: #333; color: white; padding: 15px; text-align: center; font-size: 11px; margin-top: auto; }
+        
+        .claim-btn { background: #ff9800 !important; box-shadow: 0 4px #e68a00 !important; }
     </style>
 </head>
-<body id="mainBody" onclick="this.classList.add('rainbow')">
+<body id="appBody" onclick="enableRainbow()">
 
     <header>
-
-        <div id="userBar">👤 User: Loading...</div>
-        <div class="balance-box">₱<span id="userBalance">0.00</span></div>
+        <div id="userBar">👤 Loading User...</div>
+        <div id="balanceDisplay">₱<span id="balanceVal">0.00</span></div>
     </header>
 
-    <div id="homePage" class="container">
+    <!-- Home Page -->
+    <div id="page-home" class="container">
         <h1>PAPERHOUSE INC</h1>
-        <button class="btn" onclick="showPage('adsArea')">🍍PAPERHOUSE ADS AREA🍍</button>
-        <button class="btn" onclick="showPage('withdrawPage')">💸 WITHDRAW GCASH</button>
-        <button class="btn" style="opacity: 0.3;" onclick="checkAdmin()">⚙️ OWNER</button>
+        <button class="btn" onclick="nav('page-ads')">🍍PAPERHOUSE ADS AREA🍍</button>
+        <button class="btn" onclick="nav('page-withdraw')">💸 WITHDRAW GCASH</button>
+        <br><br>
+        <button onclick="accessAdmin()" style="background:transparent; border:none; color:gray; font-size:10px;">Admin Access</button>
     </div>
 
     <!-- Ads Area -->
-    <div id="adsArea" class="container hidden">
-        <button onclick="showPage('homePage')">⬅ Back</button>
-        <h2>Tasks</h2>
-        <div id="taskList"></div>
+    <div id="page-ads" class="container hidden">
+        <button class="btn" onclick="nav('page-home')" style="width:100px; padding:5px;">⬅ Back</button>
+        <h2>EARN REWARDS</h2>
+        <div id="ads-list">
+            <!-- Standard Tasks -->
+            <div class="card">
+                <button class="btn" id="task1" onclick="handleAdTask(1)">🤑🍍Task #1🍍🤑</button>
+                <button class="btn claim-btn hidden" id="claim1" onclick="claimReward(1)">Claim ₱0.02</button>
+            </div>
+            <div class="card">
+                <button class="btn" id="task2" onclick="handleAdTask(2)">🤑🍍Task #2🍍🤑</button>
+                <button class="btn claim-btn hidden" id="claim2" onclick="claimReward(2)">Claim ₱0.02</button>
+            </div>
+            <div class="card">
+                <button class="btn" id="task3" onclick="handleAdTask(3)">🤑🍍Task #3🍍🤑</button>
+                <button class="btn claim-btn hidden" id="claim3" onclick="claimReward(3)">Claim ₱0.02</button>
+            </div>
+            <div class="card">
+                <button class="btn" id="task4" onclick="handleAdTask(4)">🤑🍍Task #4🍍🤑</button>                <button class="btn claim-btn hidden" id="claim4" onclick="claimReward(4)">Claim ₱0.02</button>
+            </div>
+            <hr>
+            <h3>BONUS TASKS</h3>
+            <div class="card">
+                <button class="btn" id="taskB1" onclick="handleAdTask('B1')">💎 BONUS TASK #1 💎</button>
+                <button class="btn claim-btn hidden" id="claimB1" onclick="claimReward('B1')">Claim ₱0.02</button>
+            </div>
+            <div class="card">
+                <button class="btn" id="taskB2" onclick="handleAdTask('B2')">💎 BONUS TASK #2 💎</button>
+                <button class="btn claim-btn hidden" id="claimB2" onclick="claimReward('B2')">Claim ₱0.02</button>
+            </div>
+            <div class="card">
+                <button class="btn" id="taskB3" onclick="handleAdTask('B3')">💎 BONUS TASK #3 💎</button>
+                <button class="btn claim-btn hidden" id="claimB3" onclick="claimReward('B3')">Claim ₱0.02</button>
+            </div>
+        </div>
     </div>
 
     <!-- Withdrawal Page -->
-    <div id="withdrawPage" class="container hidden">
-        <button onclick="showPage('homePage')">⬅ Back</button>
-        <h2>Withdraw to GCASH</h2>
-        <input type="text" id="gcashName" placeholder="GCash Name"><br><br>
-        <input type="text" id="gcashNum" placeholder="GCash Number"><br><br>
-        <input type="number" id="withdrawAmount" placeholder="Amount (min 0.50)"><br><br>
-        <button class="btn" onclick="requestWithdrawal()">Submit Request</button>
-        
-        <h3>My Withdrawals</h3>
+    <div id="page-withdraw" class="container hidden">
+        <button class="btn" onclick="nav('page-home')" style="width:100px; padding:5px;">⬅ Back</button>
+        <div class="card">
+            <h3>GCASH WITHDRAWAL</h3>
+            <input type="text" id="gcName" placeholder="GCash Full Name">
+            <input type="text" id="gcNum" placeholder="GCash Number">
+            <input type="number" id="gcAmt" placeholder="Amount (min 0.50)"><button class="btn" onclick="submitWithdraw()">SUBMIT REQUEST</button>
+        </div>
+        <h3>Live Status</h3>
         <table id="userWithdrawTable">
-            <thead><tr><th>Amount</th><th>Status</th></tr></thead>
+            <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
 
     <!-- Admin Dashboard -->
-    <div id="adminPage" class="container hidden">
-        <button onclick="showPage('homePage')">⬅ Close Admin</button>
-        <div id="adminSection">
-            <h2>OWNER DASHBOARD</h2>
-            <table id="adminTable">
-                <thead><tr><th>User</th><th>GCash</th><th>Amount</th><th>Action</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
+    <div id="page-admin" class="container hidden">
+        <button class="btn" onclick="nav('page-home')" style="width:100px; padding:5px;">⬅ Exit</button>
+        <h2>OWNER DASHBOARD</h2>
+        <table id="adminWithdrawTable">
+            <thead><tr><th>User</th><th>GCash Info</th><th>Amount</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <footer>
-        <div id="footerText"></div>
-        PAPERHOUSE INC | otico.isai2@gmail.com
+        <div id="footerTime">PAPERHOUSE INC | --/--/-- --:--:--</div>
+        otico.isai2@gmail.com
     </footer>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase App (Modular) -->
     <script type="module" src="app.js"></script>
+    <script>
+        function enableRainbow() { document.body.classList.add('rainbow-mode'); }
+    </script>
 </body>
 </html>
