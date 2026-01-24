@@ -21,11 +21,15 @@ tg?.ready();
 tg?.expand(); // Ensure the app is expanded
 
 const tgUser = tg?.initDataUnsafe?.user;
-const userId = tgUser?.id?.toString() || `local_test_${Date.now()}`; // Use Telegram ID or a test ID
-const username = tgUser ? `@${tgUser.username || tgUser.first_name}` : "Guest User";
-document.getElementById("userBar").innerText = `👤 User: ${username}`;
+// Use Telegram ID, or a unique local test ID if not in Telegram (for development)
+const userId = tgUser?.id?.toString() || `local_test_${Date.now()}`;
+// Get Telegram username or first name, default to "Guest User"
+const initialUsername = tgUser ? `@${tgUser.username || tgUser.first_name || 'user'}` : "Guest User";
 
-let userData = { balance: 0, cooldowns: {} };
+let userData = { balance: 0, cooldowns: {}, username: initialUsername }; // Initialize with potential username
+
+// Display initial username immediately
+document.getElementById("userBar").innerText = `👤 User: ${initialUsername}`;
 
 // --- Pagination State ---
 let userLastDoc = null;
@@ -41,16 +45,29 @@ async function initializeApp() {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
 
-    // If user doesn't exist, create them
     if (!userSnap.exists()) {
-        await setDoc(userRef, { username: username, balance: 0, cooldowns: {} });
+        // Create new user document if it doesn't exist
+        await setDoc(userRef, { username: initialUsername, balance: 0, cooldowns: {} });
+        userData.username = initialUsername; // Ensure local state is consistent
+    } else {
+        // If user exists, update their username in Firestore if Telegram's is different
+        const storedUserData = userSnap.data();
+        if (storedUserData.username !== initialUsername) {
+            console.log(`Username changed from ${storedUserData.username} to ${initialUsername}. Updating Firestore.`);
+            await updateDoc(userRef, { username: initialUsername });
+        }
+        userData.username = storedUserData.username; // Use stored username as primary until updated
     }
-
-    // Real-time updates for user data
+    
+    // Real-time updates for user data (balance, cooldowns, and the most current username from Firestore)
     onSnapshot(userRef, (docSnapshot) => {
-        userData = docSnapshot.data();
-        document.getElementById("balanceVal").innerText = userData.balance.toFixed(3);
-        updateCooldownUI();
+        const currentData = docSnapshot.data();
+        if (currentData) {
+            userData = currentData;
+            document.getElementById("balanceVal").innerText = userData.balance.toFixed(3);
+            document.getElementById("userBar").innerText = `👤 User: ${userData.username}`; // Always display latest from Firestore
+            updateCooldownUI();
+        }
     });
 
     // Trigger initial automatic ads
@@ -111,8 +128,13 @@ window.nav = (pageId) => {
 window.runTask = async (id) => {
     const btn = document.getElementById(`btn-task${id}`);
     const claimBtn = document.getElementById(`claim-${id}`);
+
+    // Prevent multiple clicks while ads are loading
+    if (btn.disabled) return; 
+
     btn.disabled = true;
     btn.innerText = "Watching Ads...";
+    btn.style.opacity = '0.8'; // Visual feedback for disabled state
 
     try {
         // Execute ads based on task ID
@@ -139,7 +161,9 @@ window.runTask = async (id) => {
                 console.warn("Unknown Task ID:", id);
                 alert("Task not found. Please try again.");
                 btn.disabled = false;
-                btn.innerText = `Task #${id}`;
+                btn.style.opacity = '1';
+                // Reset button text based on task type
+                btn.innerText = id.startsWith('B') ? `💎 Bonus Task #${id.substring(1)} 💎` : `🍍Task #${id.substring(1)}🍍`;
                 return;
         }
 
@@ -151,6 +175,7 @@ window.runTask = async (id) => {
         console.error("Ad sequence error:", error);
         alert("Oops! Ad failed to load properly. Please try again.");
         btn.disabled = false;
+        btn.style.opacity = '1';
         // Reset button text based on task type
         btn.innerText = id.startsWith('B') ? `💎 Bonus Task #${id.substring(1)} 💎` : `🍍Task #${id.substring(1)}🍍`;
     }
@@ -172,6 +197,7 @@ window.claim = async (id, reward) => {
     const taskBtn = document.getElementById(`btn-task${id}`);
     taskBtn.classList.remove('hidden');
     taskBtn.disabled = false; // Re-enable for next round
+    taskBtn.style.opacity = '1';
     // Reset button text based on task type
     taskBtn.innerText = id.startsWith('B') ? `💎 Bonus Task #${id.substring(1)} 💎` : `🍍Task #${id.substring(1)}🍍`;
 };
@@ -189,12 +215,14 @@ function updateCooldownUI() {
         const remainingMillis = expiry - Date.now();
         if (remainingMillis > 0) {
             btn.disabled = true;
+            btn.style.opacity = '0.7'; // Indicate disabled state
             const remainingSecs = Math.ceil(remainingMillis / 1000);
             const mins = Math.floor(remainingSecs / 60);
             const secs = remainingSecs % 60;
             cdDisplay.innerText = `Cooldown: ${mins}m ${secs}s`;
         } else {
             btn.disabled = false;
+            btn.style.opacity = '1'; // Restore full opacity
             cdDisplay.innerText = ""; // Clear cooldown text if ready
             // Ensure original button text is restored if cooldown just ended
             if (btn.innerText.includes("Watching Ads...") || btn.innerText.includes("Claim ₱")) {
@@ -219,7 +247,7 @@ window.submitWithdraw = async () => {
     if (!name || !num) return alert("Please fill in your GCash Name and Number.");
 
     await addDoc(collection(db, "withdrawals"), {
-        userId, username, name, num, amount: amt, status: "pending", time: Timestamp.now() // Use Firestore Timestamp for better sorting
+        userId, username: userData.username, name, num, amount: amt, status: "pending", time: Timestamp.now() // Use Firestore Timestamp for better sorting
     });
 
     await updateDoc(doc(db, "users", userId), { balance: userData.balance - amt });
@@ -237,23 +265,22 @@ async function fetchUserWithdrawals(isNext = true) {
     const withdrawalsRef = collection(db, "withdrawals");
     const baseQuery = query(withdrawalsRef, where("userId", "==", userId), orderBy("time", "desc"));
 
-    if (isNext && userCurrentPage > 1 && userLastDoc) {
+    if (isNext && userLastDoc) {
         userQuery = query(baseQuery, startAfter(userLastDoc), limit(PAGE_SIZE));
-    } else if (!isNext && userCurrentPage > 1 && userFirstDoc) {
+    } else if (!isNext && userFirstDoc) {
         userQuery = query(baseQuery, endBefore(userFirstDoc), limitToLast(PAGE_SIZE));
-    } else {
+    } else { // Initial load or navigating to first page
+        userCurrentPage = 1;
         userQuery = query(baseQuery, limit(PAGE_SIZE));
     }
 
     const snap = await getDocs(userQuery);
-    if (snap.empty && (userCurrentPage > 1 || (!isNext && userCurrentPage === 1))) {
-        // If empty and not first page (or trying to go back from first page), stay on current page
-        if (isNext) userCurrentPage--;
-        else userCurrentPage++; // Revert page change if no prev results
-        return;
-    }
-    if (snap.empty) { // If empty on first load
-        renderWithdrawalTable("userWithdrawTable", snap); // Render empty table
+    if (snap.empty) {
+        if ((isNext && userCurrentPage > 1) || (!isNext && userCurrentPage > 1)) {
+            // If tried to go next/prev but no more docs, revert page count
+            if (isNext) userCurrentPage--; else userCurrentPage++;
+        }
+        renderWithdrawalTable("userWithdrawTable", snap); // Render empty table or current docs
         userFirstDoc = null; userLastDoc = null;
         updatePaginationInfo("user");
         return;
@@ -294,9 +321,8 @@ function updatePaginationInfo(type) {
 
 window.changeUserPage = async (next) => {
     if (next) userCurrentPage++;
-    else userCurrentPage--;
+    else userCurrentPage = Math.max(1, userCurrentPage - 1); // Don't go below page 1
     
-    if (userCurrentPage < 1) userCurrentPage = 1; // Prevent going below page 1
     await fetchUserWithdrawals(next);
 };
 
@@ -315,21 +341,20 @@ async function fetchAdminWithdrawals(isNext = true) {
     const withdrawalsRef = collection(db, "withdrawals");
     const baseQuery = query(withdrawalsRef, where("status", "==", "pending"), orderBy("time", "asc"));
 
-    if (isNext && adminCurrentPage > 1 && adminLastDoc) {
+    if (isNext && adminLastDoc) {
         adminQuery = query(baseQuery, startAfter(adminLastDoc), limit(PAGE_SIZE));
-    } else if (!isNext && adminCurrentPage > 1 && adminFirstDoc) {
+    } else if (!isNext && adminFirstDoc) {
         adminQuery = query(baseQuery, endBefore(adminFirstDoc), limitToLast(PAGE_SIZE));
-    } else {
+    } else { // Initial load or navigating to first page
+        adminCurrentPage = 1;
         adminQuery = query(baseQuery, limit(PAGE_SIZE));
     }
 
     const snap = await getDocs(adminQuery);
-    if (snap.empty && (adminCurrentPage > 1 || (!isNext && adminCurrentPage === 1))) {
-        if (isNext) adminCurrentPage--;
-        else adminCurrentPage++;
-        return;
-    }
     if (snap.empty) {
+        if ((isNext && adminCurrentPage > 1) || (!isNext && adminCurrentPage > 1)) {
+            if (isNext) adminCurrentPage--; else adminCurrentPage++;
+        }
         renderAdminTable(snap);
         adminFirstDoc = null; adminLastDoc = null;
         updatePaginationInfo("admin");
@@ -371,9 +396,8 @@ window.approveWithdrawal = async (id) => {
 
 window.changeAdminPage = async (next) => {
     if (next) adminCurrentPage++;
-    else adminCurrentPage--;
+    else adminCurrentPage = Math.max(1, adminCurrentPage - 1); // Don't go below page 1
 
-    if (adminCurrentPage < 1) adminCurrentPage = 1;
     await fetchAdminWithdrawals(next);
 };
 
