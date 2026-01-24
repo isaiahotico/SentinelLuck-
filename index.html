@@ -1,4 +1,4 @@
-
+🎖Welcome User, Earn a lot and have a good day! 😍😘😊🤗🎉
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,181 +8,159 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        :root { --gold: #FFD700; --glass: rgba(0, 0, 0, 0.85); --blue: #0070E0; }
+        :root { --gold: #FFD700; --glass: rgba(0, 0, 0, 0.88); --blue: #00d2ff; }
         body {
-            margin: 0; padding: 0; min-height: 100vh;
-            font-family: 'Roboto', sans-serif; color: white;
-            background: #111; transition: background 0.2s ease;
-            background-size: cover; background-attachment: fixed;
+            margin: 0; padding: 0; min-height: 100vh; font-family: 'Roboto', sans-serif;
+            color: white; transition: background 0.4s ease; background-size: cover; background-attachment: fixed;
         }
-        .overlay { background: rgba(0,0,0,0.5); min-height: 100vh; padding-bottom: 80px; }
+        .overlay { background: rgba(0,0,0,0.4); min-height: 100vh; padding-bottom: 90px; }
         .container { max-width: 500px; margin: auto; }
-        header { 
-            padding: 20px; text-align: center; font-family: 'Black Ops One', cursive; 
-            color: var(--gold); text-shadow: 2px 2px #000;
-        }
-        .card { 
-            background: var(--glass); margin: 12px; padding: 18px; 
-            border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); 
-            backdrop-filter: blur(10px);
-        }
-        .btn { 
-            width: 100%; padding: 14px; border: none; border-radius: 8px; 
-            font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 8px;
-        }
-        .btn-gold { background: var(--gold); color: #000; }
-        .btn-premium { background: #ff0055; color: white; border: 2px solid white; }
-        .btn-blue { background: var(--blue); color: white; }
-        .cd-text { font-size: 0.75rem; color: #ff4444; font-weight: bold; margin-top: 5px; display: block; }
+        header { padding: 20px; text-align: center; font-family: 'Black Ops One', cursive; color: var(--gold); text-shadow: 2px 2px #000; }
         
-        /* Tables and Lists */
-        .history-item { 
-            font-size: 0.8rem; display: flex; justify-content: space-between; 
-            padding: 8px 0; border-bottom: 1px solid #333; 
-        }
-        .status-pending { color: orange; }
-        .status-paid { color: #00ff00; }
+        .card { background: var(--glass); margin: 12px; padding: 18px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(15px); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 8px; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
+        .btn-gold { background: var(--gold); color: #000; }
+        .btn-pre { background: linear-gradient(45deg, #ff0055, #ffcc00); color: white; border: 1px solid white; }
+        .btn-blue { background: var(--blue); color: black; }
+        
+        .cd-box { font-size: 0.75rem; color: #00ff00; font-weight: bold; margin-top: 4px; display: block; text-align: center; background: rgba(0,0,0,0.5); border-radius: 4px; padding: 2px; }
+        
+        /* Leaderboard & Mini Bank */
+        .event-card { border: 2px solid var(--gold); background: linear-gradient(135deg, #000, #222); }
+        .lb-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; font-size: 0.9rem; }
+        .bank-val { font-size: 1.8rem; color: #00ff00; font-weight: bold; }
 
-        #chat-box { height: 200px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; }
-        .msg { margin-bottom: 5px; font-size: 0.85rem; }
-        .msg b { color: var(--gold); }
+        #chat-window { height: 250px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; margin-bottom: 10px; }
 
-        nav { 
-            position: fixed; bottom: 0; width: 100%; max-width: 500px;
+        .msg-bubble { margin-bottom: 8px; font-size: 0.85rem; padding: 5px; border-radius: 5px; background: rgba(255,255,255,0.1); }
+        .msg-bubble b { color: var(--gold); }
 
-            background: #000; display: flex; justify-content: space-around; padding: 10px 0;
-            border-top: 2px solid var(--gold);
-        }
+        nav { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: #000; display: flex; justify-content: space-around; padding: 12px 0; border-top: 3px solid var(--gold); z-index: 100; }
         .nav-item { color: #888; text-align: center; font-size: 0.7rem; cursor: pointer; }
-        .nav-item.active { color: var(--gold); }
+        .nav-item.active { color: var(--gold); font-weight: bold; }
 
-        #reward-popup {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 1000; display: none;
-        }
-        .circle { 
-            width: 120px; height: 120px; background: var(--gold); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; color: black;
-            font-weight: bold; box-shadow: 0 0 30px var(--gold);
-        }
+        input { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: none; background: #222; color: white; box-sizing: border-box; }
+        
+        #reward-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; display: none; }
+        .reward-circle { width: 130px; height: 130px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-weight: bold; box-shadow: 0 0 40px var(--gold); border: 4px solid white; text-align: center; flex-direction: column; }
+        
         .page { display: none; }
         .page.active { display: block; }
     </style>
-    <!-- Monetag SDK -->
     <script src='//libtl.com/sdk.js' data-zone='10337853' data-sdk='show_10337853'></script>
 </head>
-<body id="bg-body">
-<div class="overlay" onclick="handleGlobalClick(event)">
+<body id="dynamic-bg" onclick="triggerBgChange()">
+
+<div class="overlay">
     <div class="container">
         
         <!-- Login -->
         <div id="page-login" class="page active">
             <header><h1>PAPERHOUSE INC</h1></header>
             <div class="card">
-                <h3>REGISTER / LOGIN</h3>
-                <input type="text" id="log-user" placeholder="Username" style="width:100%; padding:10px; margin:5px 0; border-radius:5px; border:none;">
-                <input type="number" id="log-gcash" placeholder="GCash Number" style="width:100%; padding:10px; margin:5px 0; border-radius:5px; border:none;">
-                <input type="text" id="log-ref" placeholder="Referral Code (Optional)" style="width:100%; padding:10px; margin:5px 0; border-radius:5px; border:none;">
-                <button class="btn btn-gold" onclick="login()">Access App</button>
+                <h3>GET STARTED</h3>
+                <input type="text" id="in-user" placeholder="Create Username">
+                <input type="number" id="in-gcash" placeholder="GCash Number (09...)">
+                <input type="text" id="in-ref" placeholder="Referral Code (Username)">
+                <button class="btn btn-gold" onclick="handleAuth()">LOGIN / REGISTER</button>
             </div>
         </div>
 
-        <!-- Dashboard -->
-        <div id="page-main" class="page">
+        <!-- Home -->
+        <div id="page-home" class="page">
             <header><h1>DASHBOARD</h1></header>
             <div class="card" style="text-align:center;">
-                <p>Welcome, <b id="display-name"></b> <span style="color:#00ff00; font-size:0.7rem;">● Online</span></p>
-                <div style="font-size:2.5rem; color:var(--gold); font-weight:bold;">₱<span id="u-bal">0.00</span></div>
+                <p>WALLET BALANCE</p>
+                <div style="font-size:2.8rem; color:var(--gold); font-weight:bold;">₱<span id="bal-main">0.00</span></div>
                 
-                <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
-                    <button class="btn btn-gold" id="btn-std" onclick="watchAd('std')">Standard Ad (₱0.01)</button>
-                    <span id="cd-std" class="cd-text">Ready</span>
-                    
-                    <button class="btn btn-premium" id="btn-pre" onclick="watchAd('pre')">Premium Ad (₱0.0102)</button>
-                    <span id="cd-pre" class="cd-text">Ready</span>
-                </div>
+                <button class="btn btn-gold" id="std-btn" onclick="playAd('std')">STANDARD AD (₱0.01)</button>
+                <span id="std-cd" class="cd-box">Ready</span>
+                
+                <button class="btn btn-pre" id="pre-btn" onclick="playAd('pre')">PREMIUM POPUP (₱0.0102)</button>
+                <span id="pre-cd" class="cd-box">Ready</span>
             </div>
 
             <div class="card">
-                <h4>Referral Program (8%)</h4>
-                <p style="font-size:0.9rem;">Your Code: <b id="u-code" style="color:var(--gold)"></b></p>
-                <p style="font-size:0.8rem;">Referrals: <span id="u-ref-count">0</span> | Bonus: ₱<span id="u-ref-bonus">0.00</span></p>
-                <button class="btn btn-blue" onclick="claimRef()">Claim Referral Bonus</button>
+                <h4>YOUR REFERRAL INFO</h4>
+                <p>Code: <b id="my-code" style="color:var(--blue)"></b></p>
+                <p>Referrals: <span id="my-ref-count">0</span> | Bonus Earned: ₱<span id="my-ref-bonus">0.00</span></p>
+                <button class="btn btn-blue" onclick="claimRefBonus()">CLAIM TO BALANCE</button>
+            </div>
+        </div>
+
+        <!-- Leaderboard & Mini Bank -->
+        <div id="page-event" class="page">
+            <header><h1>EVENT & BANK</h1></header>
+            <div class="card event-card">
+                <h4>🏆 WEEKLY ADS EVENT</h4>
+                <p style="font-size:0.8rem;">Goal: <b>5,000 Ads</b> in a week.<br>Reward: <b>₱25.00</b> auto-sent to Mini Bank.</p>
+                <div class="lb-row" style="background:var(--gold); color:black; font-weight:bold;">
+                    <span>Rank / User</span><span>Ads This Week</span
+
+
+                </div>
+                <div id="lb-list"></div>
+            </div>
+
+            <div class="card" style="text-align:center; border: 2px solid #00ff00;">
+                <h4>🏦 MINI BANK</h4>
+                <div class="bank-val">₱<span id="bal-bank">0.00</span></div>
+                <p style="font-size:0.7rem;">Rewards from events are stored here.</p>
+                <button class="btn btn-gold" onclick="claimBank()">WITHDRAW BANK TO BALANCE</button>
             </div>
         </div>
 
         <!-- Chat -->
         <div id="page-chat" class="page">
-            <header><h1>LIVE CHAT</h1></header>
+            <header><h1>GLOBAL CHAT</h1></header>
             <div class="card">
-                <div id="chat-box"></div>
-                <input type="text" id="chat-in" placeholder="Earn ₱0.012 per chat..." style="width:100%; padding:10px; margin:10px 0; border-radius:5px; border:none;">
-                <button class="btn btn-gold" id="btn-chat" onclick="sendChat()"
-
-Send Message</button>
-                <span id="cd-chat" class="cd-text">Ready</span>
-            </div>
-            <div class="card">
-                <h4>Online Users</h4>
-                <div id="online-list" style="font-size:0.75rem;"></div>
+                <div id="chat-window"></div>
+                <p style="font-size:0.7rem; color:var(--gold);">* Sends after watching 2 High-CPM Ads (₱0.012 Reward)</p>
+                <input type="text" id="chat-msg" placeholder="Write message...">
+                <button class="btn btn-gold" id="chat-btn" onclick="sendChatMessage()">SEND & EARN</button>
+                <span id="chat-cd" class="cd-box">Ready</span>
             </div>
         </div>
 
-        <!-- Withdraw -->
-        <div id="page-withdraw" class="page">
-            <header><h1>WITHDRAWAL</h1></header>
+        <!-- Withdraw & Admin -->
+        <div id="page-wallet" class="page">
+            <header><h1>WITHDRAW</h1></header>
             <div class="card">
-                <p>GCash: <b id="u-gcash"></b></p>
-                <input type="number" id="wd-amt" placeholder="Min 0.02" style="width:100%; padding:10px; border-radius:5px; border:none;">
-                <button class="btn btn-gold" onclick="requestWD()">Cashout</button>
+                <p>GCash: <b id="my-gcash"></b></p>
+                <input type="number" id="wd-amt" placeholder="Amount (Min 0.02)">
+                <button class="btn btn-gold" onclick="requestWd()">REQUEST CASHOUT</button>
             </div>
             <div class="card">
-                <h4>Your History</h4>
-                <div id="wd-history"></div>
+                <h4>History</h4>
+                <div id="wd-history" style="font-size:0.8rem;"></div>
             </div>
-        </div>
-
-        <!-- Help -->
-        <div id="page-help" class="page">
-            <header><h1>HELP & LINKS</h1></header>
-            <div class="card">
-                <button class="btn btn-blue" onclick="window.open('https://t.me/paperhouseinc')">Telegram Group</button>
-                <button class="btn btn-blue" onclick="window.open('https://t.me/PAPERHOUSE_INC')">Telegram Channel</button>
-                <button class="btn btn-blue" onclick="window.open('https://facebook.com/groups/1193693469083843/')">Facebook Group</button>
-                <button class="btn btn-blue" onclick="window.open('https://www.facebook.com/profile.php?id=61586281245735')">Facebook Page</button>
-                <button class="btn btn-premium" style="margin-top:30px;" onclick="showAdmin()">Admin Dashboard</button>
-            </div>
+            <button class="btn" style="background:#333; color:white; font-size:0.7rem;" onclick="showAdmin()">OWNER DASHBOARD</button>
         </div>
 
         <!-- Admin -->
         <div id="page-admin" class="page">
             <header><h1>OWNER PANEL</h1></header>
             <div class="card">
-                <input type="password" id="admin-pass" placeholder="Password">
-                <button class="btn btn-gold" onclick="authAdmin()">Login</button>
+                <input type="password" id="adm-pass" placeholder="Admin Password">
+                <button class="btn btn-gold" onclick="authAdmin()">LOGIN ADMIN</button>
             </div>
-            <div id="admin-content" style="display:none;">
-                <div class="card" style="background: #900;">
-                    <h4>Total Processed Paid: ₱<span id="adm-total-paid">0.00</span></h4>
-                </div>
-                <div class="card">
-                    <h4>Pending Requests</h4>
-                    <div id="adm-requests"></div>
-                </div>
+            <div id="adm-data" style="display:none;">
+                <div class="card" style="background:#004400;">Total Paid: ₱<span id="adm-paid-total">0.00</span></div>
+                <div id="adm-pending-list"></div>
             </div>
         </div>
-
     </div>
 
     <nav id="navbar" style="display:none;">
-        <div class="nav-item active" onclick="showPage('page-main')">🏠<br>Home</div>
-        <div class="nav-item" onclick="showPage('page-chat')">💬<br>Chat</div>
-        <div class="nav-item" onclick="showPage('page-withdraw')">💰<br>History</div>
-        <div class="nav-item" onclick="showPage('page-help')">🔗<br>Help</div>
+        <div class="nav-item active" onclick="tab('page-home')">🏠<br>Home</div>
+        <div class="nav-item" onclick="tab('page-event')">🏆<br>Event</div>
+        <div class="nav-item" onclick="tab('page-chat')">💬<br>Chat</div>
+        <div class="nav-item" onclick="tab('page-wallet')">💰<br>Wallet</div>
     </nav>
 </div>
 
-<div id="reward-popup"><div class="circle animate__animated" id="anim-box">+₱<span id="pop-val"></span></div></div>
+<div id="reward-popup"><div class="reward-circle animate__animated" id="anim-body"><span>SUCCESS</span><div id="pop-amt"></div></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
