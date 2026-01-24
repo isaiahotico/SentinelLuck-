@@ -1,115 +1,156 @@
-Welcome Monsters
+ChatGPT | Midjourney:
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PH Rewards Pro</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PAPERHOUSE INC | V3 PREMIUM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Monetag SDKs -->
+    <script src='//libtl.com/sdk.js' data-zone='10276123' data-sdk='show_10276123'></script>
+    <script src='//libtl.com/sdk.js' data-zone='10337795' data-sdk='show_10337795'></script>
+    <script src='//libtl.com/sdk.js' data-zone='10337853' data-sdk='show_10337853'></script>
+
     <style>
-        :root {
-            --bg: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #222222);
-            --hint: var(--tg-theme-hint-color, #999999);
-            --btn: var(--tg-theme-button-color, #248bcf);
-            --btn-txt: var(--tg-theme-button-text-color, #ffffff);
-            --sec-bg: var(--tg-theme-secondary-bg-color, #f1f1f1);
-        }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 70px; }
-        
-        /* Top Fixed Bar */
-        .header { position: sticky; top: 0; background: var(--sec-bg); padding: 12px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
-        .balance { color: #2ecc71; font-weight: bold; background: rgba(46,204,113,0.1); padding: 4px 8px; border-radius: 8px; }
-
-        /* Tabs */
-        .nav { display: flex; background: var(--sec-bg); border-bottom: 1px solid #ddd; }
-        .nav-item { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; }
-        .nav-item.active { border-bottom: 2px solid var(--btn); color: var(--btn); font-weight: bold; }
-
-        .page { display: none; padding: 15px; }
-        .page.active { display: block; }
-
-        /* Chat UI */
-        #chat-window { height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: var(--bg); }
-        .m { margin-bottom: 8px; font-size: 14px; }
-        .m b { color: var(--btn); }
-        .chat-input-row { display: flex; gap: 8px; }
-
-        /* Forms & Tables */
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); }
-        button { background: var(--btn); color: var(--btn-txt); border: none; padding: 10px 15px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .status-pending { color: orange; }
-
-        .status-approved { color: green; font-weight: bold; }
-        
-        /* Reward Button */
-        .ad-btn { background: linear-gradient(45deg, #f1c40f, #f39c12); margin-bottom: 15px; }
+        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .gold-gradient { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .nav-active { color: #fbbf24; border-bottom: 3px solid #fbbf24; }
+        .cooldown-active { filter: grayscale(1); pointer-events: none; opacity: 0.5; }
+        .chat-bubble { background: #1e293b; padding: 12px; border-radius: 15px; max-width: 85%; margin-bottom: 8px; }
+        .my-chat { background: #2563eb; margin-left: auto; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     </style>
 </head>
-<body>
+<body class="select-none">
 
-<div class="header">
-    <div id="u-name">👤 Loading...</div>
-    <div id="u-balance" class="balance">₱ 0.000</div>
-</div>
-
-<div class="nav">
-    <div class="nav-item active" onclick="tab('home')">Home/Chat</div>
-    <div class="nav-item" onclick="tab('withdraw')">Withdraw</div>
-    <div class="nav-item" onclick="adminLogin()">Owner</div>
-</div>
-
-<!-- PAGE: HOME -->
-<div id="home" class="page active">
-    <button class="ad-btn" id="claimReward">📺 Watch Ad (+₱0.005)</button>
-    <div id="chat-window"></div>
-    <div class="chat-input-row">
-        <input type="text" id="chatMsg" placeholder="Type a message...">
-        <button id="sendChat" style="width: auto;">Send</button>
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-8">
+        <h1 class="text-3xl font-black mb-6 gold-gradient bg-clip-text text-transparent">PAPERHOUSE INC</h1>
+        <input type="text" id="reg-name" placeholder="Username" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-800 mb-4 outline-none">
+        <input type="number" id="reg-gcash" placeholder="GCash (09...)" class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-800 mb-6 outline-none">
+        <button onclick="app.register()" class="w-full gold-gradient py-4 rounded-2xl font-bold text-slate-900 uppercase">Start Earning</button>
     </div>
-</div>
 
-<!-- PAGE: WITHDRAW -->
-<div id="withdraw" class="page">
-    <h3>GCash Withdrawal</h3>
-    <p style="font-size: 12px; color: var(--hint);">Minimum withdrawal: ₱0.015</p>
-    <input type="text" id="gName" placeholder="GCash Account Name">
-    <input type="text" id="gNum" placeholder="GCash Number (09...)">
-    <input type="number" id="gAmt" step="0.001" placeholder="Amount (e.g. 0.015)">
-    <button onclick="handleWithdraw()">Request Payout</button>
+    <div id="app" class="hidden min-h-screen pb-28">
+        <header class="p-5 flex justify-between items-center sticky top-0 z-40 glass rounded-b-3xl">
+            <div>
 
-    <h4>History</h4>
-    <table id="historyTable">
-        <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
-        <tbody></tbody>
-    </table>
-</div>
+                <h2 id="user-display" class="font-bold text-white">---</h2>
+                <p id="online-count" class="text-[10px] text-green-500 font-bold uppercase">0 Online</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] text-slate-400 font-bold">WALLET</p>
+                <h2 id="balance-display" class="text-2xl font-black">₱0.00</h2>
+            </div>
+        </header>
 
-<!-- PAGE: OWNER -->
-<div id="admin" class="page">
-    <h3>Pending Approvals</h3>
-    <table>
-        <thead><tr><th>User</th><th>GCash</th><th>Amt</th><th>Action</th></tr></thead>
-        <tbody id="adminBody"></tbody>
-    </table>
-</div>
+        <main class="p-4 space-y-4">
+            <!-- Home Section -->
+            <section id="sec-home" class="space-y-4">
+                <div class="glass rounded-[2rem] p-8 text-center">
+                    <h1 id="big-balance" class="text-5xl font-black mb-4">₱0.00</h1>
+                    <button onclick="app.requestWithdraw()" class="w-full py-3 rounded-xl bg-white text-black font-bold text-xs uppercase">Withdraw</button>
+                </div>
 
-<script type="module" src="app.js"></script>
+                <!-- Ad Buttons -->
+                <div id="btn-reg" onclick="app.playAd('regular')" class="glass p-5 rounded-2xl flex justify-between items-center active:scale-95 transition">
+                    <div><h4 class="font-bold">Regular Ad</h4><p class="text-[10px] text-slate-400">Earn ₱0.0102</p></div>
+                    <span id="timer-reg" class="hidden text-xs text-yellow-500 font-bold">45s</span>
+                </div>
 
-<script>
-    function tab(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-    function adminLogin() {
-        const p = prompt("Admin Password:");
-        if(p === "Propetas6") tab('admin');
-        else alert("Unauthorized");
-    }
-</script>
+                <div id="btn-prem" onclick="app.playAd('premium')" class="glass p-5 rounded-2xl flex justify-between items-center border-yellow-500/20 active:scale-95 transition">
+                    <div><h4 class="font-bold text-yellow-500">Premium Row</h4><p class="text-[10px] text-slate-400">Triple sequence ₱0.0102</p></div>
+                    <span id="timer-prem" class="hidden text-xs text-yellow-500 font-bold">45s</span>
+                </div>
+
+                <div id="btn-turbo" onclick="app.playAd('turbo')" class="glass p-5 rounded-2xl flex justify-between items-center active:scale-95 transition">
+                    <div><h4 class="font-bold text-blue-400">Turbo Row</h4><p class="text-[10px] text-slate-400">Triple sequence ₱0.0102</p></div>
+                    <span id="timer-turbo" class="hidden text-xs text-yellow-500 font-bold">45s</span>
+                </div>
+
+                <!-- NEW: Rewarded Pop Button -->
+                <div id="btn-pop" onclick="app.playAd('popup')" class="gold-gradient p-5 rounded-2xl flex justify-between items-center active:scale-95 transition">
+                    <div><h4 class="font-bold text-slate-900 uppercase">Rewarded Pop-Up</h4><p class="text-[10px] text-slate-800 font-bold">Random Zone ₱0.0102</p></div>
+                    <span id="timer-pop" class="hidden text-xs text-slate-900 font-bold">45s</span>
+                </div>
+            </section>
+
+            <!-- Forum Section -->
+            <section id="sec-topics" class="hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-black">Community Board</h3>
+                    <button onclick="app.modal('modal-topic', true)" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-xs font-bold">+ POST</button>
+                </div>
+                <div id="topics-list" class="space-y-3"></div>
+            </section>
+
+            <!-- Topic Detail View (Clickable target) -->
+            <section id="sec-topic-detail" class="hidden space-y-4">
+                <button onclick="app.nav('topics')" class="text-yellow-500 text-xs font-bold"><i class="fas fa-arrow-left"></i> BACK</button>
+                <div id="topic-content-detail" class="glass p-6 rounded-3xl"></div>
+            </section><!-- Online Users Section -->
+            <section id="sec-online" class="hidden space-y-4">
+                <h3 class="text-xl font-black">Users Online</h3>
+                <div id="online-list" class="grid grid-cols-2 gap-2"></div>
+            </section>
+
+            <!-- Chat Section -->
+            <section id="sec-chat" class="hidden flex flex-col h-[60vh]">
+                <div id="chat-box" class="flex-1 overflow-y-auto pr-2 mb-2"></div>
+                <div class="flex gap-2 p-2 glass rounded-2xl">
+                    <input type="text" id="chat-input" placeholder="Type..." class="flex-1 bg-transparent p-2 outline-none">
+                    <button onclick="app.sendMessage()" class="bg-yellow-500 text-black w-10 h-10 rounded-xl"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </section>
+
+            <!-- Withdrawal History -->
+            <section id="sec-history" class="hidden space-y-3">
+                <h3 class="text-xl font-black">Withdrawal History</h3>
+                <div id="hist-list" class="space-y-2"></div>
+            </section>
+
+            <!-- Help Section -->
+            <section id="sec-help" class="hidden space-y-4">
+                <h3 class="text-xl font-black">Need Help?</h3>
+                <div class="glass p-6 rounded-3xl space-y-4">
+                    <p class="text-sm">For account issues, withdrawal concerns, or bugs, contact us:</p>
+                    <a href="https://t.me/PAPERHOUSE_INC" class="block p-4 bg-blue-600 rounded-xl font-bold text-center"><i class="fab fa-telegram"></i> Telegram Channel</a>
+                    <a href="#" class="block p-4 bg-blue-800 rounded-xl font-bold text-center"><i class="fab fa-facebook"></i> Facebook Support</a>
+                </div>
+            </section>
+
+            <!-- Admin -->
+            <section id="sec-admin" class="hidden space-y-4">
+                <h3 class="text-xl font-black text-red-500">Admin Panel</h3>
+                <div id="admin-list" class="space-y-2"></div>
+            </section>
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 glass flex justify-around p-4 z-50 rounded-t-3xl">
+            <button onclick="app.nav('home')"><i class="fas fa-home"></i></button>
+            <button onclick="app.nav('topics')"><i class="fas fa-list"></i></button>
+            <button onclick="app.nav('chat')"><i class="fas fa-comment"></i></button>
+            <button onclick="app.nav('online')"><i class="fas fa-wifi"></i></button>
+            <button onclick="app.nav('history')"><i class="fas fa-clock"></i></button>
+            <button onclick="app.nav('help')"><i class="fas fa-question-circle"></i></button>
+            <button onclick="app.nav('admin')"><i class="fas fa-user-shield"></i></button>
+        </nav>
+    </div>
+
+    <!-- Modal: New Topic -->
+    <div id="modal-topic" class="modal">
+        <div class="bg-slate-900 w-full max-w-md p-6 rounded-3xl">
+            <input id="topic-title" type="text" placeholder="Subject" class="w-full bg-slate-950 p-4 rounded-xl mb-3">
+            <textarea id="topic-desc" placeholder="Message..." rows="4" class="w-full bg-slate-950 p-4 rounded-xl mb-4"></textarea>
+            <div class="flex gap-2">
+                <button onclick="app.modal('modal-topic', false)" class="flex-1 bg-slate-800 py-3 rounded-xl">Cancel</button>
+                <button onclick="app.postTopic()" class="flex-1 gold-gradient py-3 rounded-xl text-slate-900 font-bold">Post</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>
