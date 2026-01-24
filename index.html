@@ -1,9 +1,10 @@
+ChatGPT | Midjourney:
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PAPERHOUSE V4 | PRO</title>
+    <title>PAPERHOUSE V4 | ELITE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -13,27 +14,30 @@
     <script src='//libtl.com/sdk.js' data-zone='10337853' data-sdk='show_10337853'></script>
 
     <style>
-        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .gold-gradient { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #64748b; font-weight: bold; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; font-size: 8px; color: #64748b; font-weight: bold; text-transform: uppercase; }
         .nav-active { color: #fbbf24; }
         .hidden-el { display: none !important; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .chat-bubble { background: #1e293b; padding: 10px; border-radius: 12px; max-width: 85%; margin-bottom: 8px; font-size: 13px; }
-        .my-chat { background: #2563eb; margin-left: auto; }
     </style>
 </head>
 <body>
 
-    <!-- Registration -->
+    <!-- Auth -->
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-8">
         <h1 class="text-4xl font-black mb-2 gold-gradient bg-clip-text text-transparent italic">PAPERHOUSE</h1>
-        <p class="text-slate-500 text-[10px] mb-8 uppercase tracking-[0.3em]">Premium Earning Portal</p>
-        <input type="text" id="reg-name" placeholder="Username (Referral Code)" class="w-full p-4 rounded-xl bg-slate-900 border border-slate-800 mb-4 outline-none">
+        <p class="text-slate-500 text-[10px] mb-8 uppercase tracking-[0.3em]">Elite Earning Circle</p>
+        <input type="text" id="reg-name" placeholder="Username" class="w-full p-4 rounded-xl bg-slate-900 border border-slate-800 mb-4 outline-none">
         <input type="number" id="reg-gcash" placeholder="GCash Number" class="w-full p-4 rounded-xl bg-slate-900 border border-slate-800 mb-6 outline-none">
-        <button onclick="app.register()" class="w-full gold-gradient py-4 rounded-xl font-bold text-slate-900 uppercase">Enter App</button>
-    </div>    <div id="app" class="hidden min-h-screen pb-24">
+        <button onclick="app.register()" class="w-full gold-gradient py-4 rounded-xl font-bold text-slate-900 uppercase">Start Earning</button>
+    </div>
+
+    <div id="app" class="hidden min-h-screen pb-24">
+
+        <!-- Header -->
         <header class="p-4 flex justify-between items-center glass sticky top-0 z-50 rounded-b-3xl">
             <div>
                 <h2 id="u-name" class="font-black text-white italic">---</h2>
@@ -46,124 +50,142 @@
         </header>
 
         <main class="p-4 space-y-6">
-            <!-- ADS SECTION -->
+            
+            <!-- HOME / ADS -->
             <section id="sec-home" class="space-y-4">
-                <div class="glass p-8 rounded-[2.5rem] text-center border-b-4 border-yellow-500">
-                    <h1 id="big-balance" class="text-5xl font-black text-white mb-6">₱0.00</h1>
-                    <button onclick="app.withdraw()" class="w-full py-4 rounded-2xl bg-white text-black font-black uppercase text-xs tracking-widest">Withdraw</button>
+                <div class="glass p-8 rounded-[2.5rem] text-center border-b-4 border-yellow-500 shadow-2xl">
+                    <p class="text-[10px] text-slate-400 font-black uppercase mb-2">Ready for GCash</p>
+                    <h1 id="big-balance" class="text-5xl font-black text-white mb-6 tracking-tighter">₱0.00</h1>
+                    <button onclick="app.withdraw()" class="w-full py-4 rounded-2xl bg-white text-black font-black uppercase text-xs tracking-widest">Withdraw Now</button>
                 </div>
 
+                <!-- Premium Ads Box -->
                 <div id="box-premium">
-                    <button onclick="app.playAdSequence('premium')" class="w-full gold-gradient p-6 rounded-2xl flex justify-between items-center">
-                        <div class="text-left text-slate-900"><h4 class="font-black italic">PREMIUM ROW</h4><p class="text-[10px] font-bold">3X POP SEQUENCE | ₱0.0105</p></div>
+                    <button onclick="app.playPremium()" class="w-full gold-gradient p-6 rounded-2xl flex justify-between items-center shadow-xl shadow-yellow-500/10">
+                        <div class="text-left text-slate-900"><h4 class="font-black italic">PREMIUM ROW</h4><p class="text-[10px] font-bold uppercase">3x Sequence | ₱0.0043</p></div>
                         <i class="fas fa-crown text-2xl text-slate-900"></i>
                     </button>
                 </div>
                 <div id="timer-premium" class="hidden-el glass p-6 rounded-2xl text-center border border-yellow-500/20">
-                    <h4 class="text-2xl font-black cd-val text-yellow-500">45s</h4>
+                    <p class="text-[10px] text-yellow-500 font-black uppercase mb-1">Cooldown</p>
+                    <h4 class="text-2xl font-black cd-val">15s</h4>
                 </div>
-
-                <div id="box-turbo">
-                    <button onclick="app.playAdSequence('turbo')" class="w-full bg-blue-600 p-6 rounded-2xl flex justify-between items-center">                        <div class="text-left text-white"><h4 class="font-black italic">TURBO ROW</h4><p class="text-[10px] font-bold">3X INLINE SEQUENCE | ₱0.0105</p></div>
-                        <i class="fas fa-bolt text-2xl"></i>
-                    </button>
-                </div>
-                <div id="timer-turbo" class="hidden-el glass p-6 rounded-2xl text-center border border-blue-500/20">
-                    <h4 class="text-2xl font-black cd-val text-blue-500">45s</h4>
-                </div>
-            </section>
-
-            <!-- REFERRALS -->
-            <section id="sec-referral" class="hidden space-y-4">
-                <div class="glass p-6 rounded-2xl">
-                    <h3 class="font-black text-yellow-500 mb-1">REFERRAL CODE</h3>
-                    <p class="text-[10px] text-slate-400 mb-4">Enter your friend's username to sync referrals.</p>
-                    <div class="flex gap-2">
-                        <input id="ref-input" type="text" placeholder="Username" class="flex-1 bg-slate-900 p-3 rounded-xl outline-none">
-                        <button onclick="app.claimReferral()" class="bg-white text-black px-4 rounded-xl font-bold text-xs">SYNC</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="glass p-4 rounded-2xl text-center">
-                        <p class="text-[10px] text-slate-400">REFERRALS</p>
-                        <h4 id="ref-count" class="text-xl font-black">0</h4>
-                    </div>
-                    <div class="glass p-4 roundedcenter">
-                        <p class="text-[10px] text-slate-400">BONUS (8%)</p>
-                        <h4 id="ref-bonus" class="text-xl font-black text-green-500">₱0.00</h4>
-                    </div>
-                </div>
-                <button onclick="app.claimBonus()" class="w-full gold-gradient py-3 rounded-xl text-black font-bold">CLAIM BONUS</button>
-                <div id="ref-list" class="space-y-2 mt-4"></div>
             </section>
 
             <!-- LEADERBOARD -->
-            <section id="sec-leaderboard" class="hidden space-y-4">
+            <section id="sec-leaderboard" class="hidden space-y-6">
                 <div class="gold-gradient p-5 rounded-3xl text-slate-900">
-                    <h3 class="font-black uppercase italic">Reward Bank</h3>
-                    <p class="text-[10px] font-bold mb-4">10,000 Weekly Ads = ₱25.00 Bonus</p>
-                    <div class="flex justify-between items-center">
-                        <h4 id="lb-progress" class="text-xl font-black">0 / 10000</h4>
-                        <button onclick="app.claimLB()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black">CLAIM</button>
+                    <h3 class="font-black italic uppercase">LB Reward Bank</h3>
+                    <p class="text-[10px] font-bold mb-4">Goal: 10,000 Ads Weekly | Reward: ₱25.00</p>
+                    <div class="flex justify-between items-end">
+                        <div><p class="text-[10px] opacity-70">Weekly Ads Count</p><h4 id="lb-progress" class="text-xl font-black">0 / 10000</h4></div>
+                        <button onclick="app.claimLB()" class="bg-slate-900 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase">Claim ₱25</button>
                     </div>
                 </div>
-                <h3 class="font-black text-yellow-500 italic">Top Earners</h3>
-                <div id="lb-earners" class="space-y-2"></div>
-                <h3 class="font-black text-blue-400 italic">Weekly Ad Champions</h3>
-                <div id="lb-ads" class="space-y-2"></div>
+                <div class="space-y-4">
+                    <h3 class="font-black text-yellow-500 italic">Weekly Champions</h3>
+                    <div id="lb-ads" class="space-y-2"></div>
+                </div>
             </section>
 
-            <!-- PROFILE & STATS -->
+            <!-- PROFILE -->
             <section id="sec-profile" class="hidden space-y-4">
                 <div class="glass p-8 rounded-[2.5rem] text-center">
                     <div class="w-20 h-20 bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-yellow-500">
-                        <i class="fas fa-user text-3xl text-yellow-500"></i>
+                        <i class="fas fa-user-circle text-4xl text-yellow-500"></i>
                     </div>
-                    <h2 id="p-name" class="text-2xl font-black">---</h2>
-                    <p class="text-xs text-slate-400">GCash: <span id="p-gcash" class="text-yellow-500 font-bold">---</span></p>
+                    <h2 id="p-name" cl
+
+ass="text-2xl font-black">---</h2>
+                    <p class="text-xs text-slate-400">Ref Code: <span id="p-gcash" class="text-yellow-500 font-bold">---</span></p>
                 </div>
-                <div class="glass p-6 rounded-3xl grid grid-cols-3 gap-2 text-center">
-                    <div><p class="text-[9px]">TODAY</p><h4 id="st-d" class="font-black">0</h4></div>
-                    <div><p class="text-[9px]">WEEKLY</p><h4 id="st-w" class="font-black">0</h4></div>
-                    <div><p class="text-[9px]">TOTAL</p><h4 id="st-o" class="font-black">0</h4></div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="glass p-6 rounded-3xl">
+                        <p class="text-[10px] text-slate-500 font-black mb-4 uppercase">Your Ad Stats</p>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div><p class="text-[9px]">TODAY</p><h4 id="st-d" class="font-black">0</h4></div>
+                            <div><p class="text-[9px]">WEEKLY</p><h4 id="st-w" class="font-black">0</h4></div>
+                            <div><p class="text-[9px]">OVERALL</p><h4 id="st-o" class="font-black">0</h4></div>
+                        </div>
+                    </div>
+                    <div class="glass p-6 rounded-3xl border-l-4 border-green-500">
+                        <p class="text-[10px] text-green-500 font-black mb-4 uppercase">Community Earnings</p>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div><p class="text-[9px]">TODAY</p><h4 id="gst-d" class="font-black">₱0</h4></div>
+                            <div><p class="text-[9px]">WEEKLY</p><h4 id="gst-w" class="font-black">₱0</h4></div>
+                            <div><p class="text-[9px]">OVERALL</p><h4 id="gst-o" class="font-black text-green-500">₱0</h4></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-3xl">
+                    <h4 class="text-xs font-black text-yellow-500 mb-2">Sync Referral</h4>
+                    <div class="flex gap-2">
+                        <input id="ref-input" type="text" placeholder="Enter Ref Code" class="flex-1 bg-slate-900 p-3 rounded-xl outline-none text-xs">
+                        <button onclick="app.claimReferral()" class="bg-white text-black px-4 rounded-xl font-bold text-xs">SYNC</button>
+                    </div>
                 </div>
             </section>
 
-            <!-- CHAT & FORUM (Merged logic) -->
+            <!-- FORUM -->
+            <section id="sec-forum" class="hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-black italic">Forum</h3>
+                    <button onclick="app.openModal('modal-post')" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase">+ Topic</button>
+                </div>
+                <div id="forum-list" class="space-y-4"></div>
+            </section>
+
+            <!-- CHAT -->
             <section id="sec-chat" class="hidden flex flex-col h-[65vh]">
                 <div id="chat-box" class="flex-1 overflow-y-auto pr-2"></div>
                 <div id="chat-cd-label" class="text-[9px] text-center text-yellow-500 font-bold p-1"></div>
                 <div class="flex gap-2 p-2 glass rounded-2xl">
-                    <input id="chat-input" placeholder="Watch 3 ads to send..." class="flex-1 bg-transparent p-2 text-sm outline-none">
-                    <button onclick="app.sendChatMessage()" class="bg-yellow-500 text-black w-10 h-10 rounded-xl"><i class="fas fa-paper-plane"></i></button>
+                    <input id="chat-input" placeholder="Watch 3 ads to message..." class="flex-1 bg-transparent p-2 text-sm outline-none">
+                    <button onclick="app.sendChatMessage()" class="bg-yellow-500 text-black w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </section>
 
-            <!-- OWNER DASHBOARD -->
+            <!-- ADMIN -->
             <section id="sec-admin" class="hidden space-y-4">
-                <h3 class="text-xl font-black text-red-500 italic">ADMIN DASHBOARD</h3>
-                <div id="admin-withdrawals" class="space-y-2"></div>
+                <h3 class="text-red-500 font-black uppercase tracking-tighter">Owner Dashboard</h3>
+                <div id="admin-withdrawals" class="space-y-3"></div>
             </section>
 
-            <!-- SECTIONS FOR OTHERS -->
-            <section id="sec-history" class="hidden space-y-3"><div id="hist-list" class="space-y-2"></div></section>
-            <section id="sec-online" class="hidden space-y-3"><div id="online-list" class="grid grid-cols-2 gap-2"></div></section>
+<!-- HISTORY / ONLINE LIST -->
+            <section id="sec-history" class="hidden space-y-4"><h3 class="font-black uppercase italic">Payout History</h3><div id="hist-list" class="space-y-2"></div></section>
+            <section id="sec-online" class="hidden space-y-4"><h3 class="font-black uppercase italic">Active Users</h3><div id="online-list" class="grid grid-cols-2 gap-2"></div></section>
             <section id="sec-help" class="hidden space-y-4">
-                <div class="grid gap-2 text-xs font-bold">
+                <h3 class="font-black uppercase italic">Support</h3>
+                <div class="grid gap-2">
                     <a href="https://t.me/paperhouseinc" class="glass p-4 rounded-xl flex justify-between">Telegram Group <i class="fab fa-telegram text-blue-400"></i></a>
-                    <a href="https://t.me/PAPERHOUSE_INC" class="glass p-4 rounded-xl flex justify-between">Telegram Channel <i class="fab fa-telegram text-blue-500"></i></a>
+                    <a href="https://facebook.com/groups/1193693469083843/" class="glass p-4 rounded-xl flex justify-between">Facebook Group <i class="fab fa-facebook text-blue-700"></i></a>
                 </div>
             </section>
+
         </main>
 
-        <nav class="fixed bottom-0 left-0 right-0 glass flex justify-around p-3 z-50 rounded-t-[2rem]">
-            <button onclick="app.nav('home')" class="nav-btn nav-active"><i class="fas fa-home text-lg"></i><span>Home</span></button>
-            <button onclick="app.nav('leaderboard')" class="nav-btn"><i class="fas fa-trophy text-lg"></i><span>Rank</span></button>
-            <button onclick="app.nav('referral')" class="nav-btn"><i class="fas fa-users text-lg"></i><span>Ref</span></button>
-            <button onclick="app.nav('chat')" class="nav-btn"><i class="fas fa-comment text-lg"></i><span>Chat</span></button>
-            <button onclick="app.nav('profile')" class="nav-btn"><i class="fas fa-user-circle text-lg"></i><span>Profile</span></button>
-            <button onclick="app.nav('admin')" class="nav-btn text-slate-800"><i class="fas fa-lock"></i><span>Admin</span></button>
+        <!-- Navbar -->
+        <nav class="fixed bottom-0 left-0 right-0 glass flex justify-around p-3 z-50 rounded-t-[2.5rem] border-t border-white/5">
+            <button onclick="app.nav('home')" class="nav-btn nav-active"><i class="fas fa-home text-lg mb-1"></i>Home</button>
+            <button onclick="app.nav('leaderboard')" class="nav-btn"><i class="fas fa-trophy text-lg mb-1"></i>Rank</button>
+            <button onclick="app.nav('forum')" class="nav-btn"><i class="fas fa-comments text-lg mb-1"></i>Forum</button>
+            <button onclick="app.nav('chat')" class="nav-btn"><i class="fas fa-paper-plane text-lg mb-1"></i>Chat</button>
+            <button onclick="app.nav('profile')" class="nav-btn"><i class="fas fa-user text-lg mb-1"></i>Profile</button>
+            <button onclick="app.nav('admin')" class="nav-btn text-slate-800"><i class="fas fa-lock text-lg mb-1"></i>Owner</button>
         </nav>
+    </div>
+
+    <!-- Topic Modal -->
+    <div id="modal-post" class="modal">
+        <div class="bg-slate-900 w-full max-w-md p-6 rounded-3xl">
+            <h3 class="font-black text-yellow-500 mb-4">Post Topic</h3>
+            <input id="post-title" type="text" placeholder="Title" class="w-full bg-slate-950 p-4 rounded-xl mb-3 outline-none border border-slate-800">
+            <textarea id="post-body" placeholder="Write something..." rows="4" class="w-full bg-slate-950 p-4 rounded-xl mb-4 outline-none border border-slate-800"></textarea>
+            <button onclick="app.submitPost()" class="w-full gold-gradient py-4 rounded-xl font-bold text-slate-900">PUBLISH</button>
+            <button onclick="app.closeModal('modal-post')" class="w-full mt-2 text-slate-500 text-[10px]">CANCEL</button>
+        </div>
     </div>
 
     <script type="module" src="app.js"></script>
