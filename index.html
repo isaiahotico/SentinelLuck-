@@ -1,75 +1,115 @@
+ChatGPT | Midjourney:
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Telegram GCash Rewards</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PH Rewards Pro</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: var(--tg-theme-bg-color, #ffffff);
+            --text: var(--tg-theme-text-color, #222222);
+            --hint: var(--tg-theme-hint-color, #999999);
+            --btn: var(--tg-theme-button-color, #248bcf);
+            --btn-txt: var(--tg-theme-button-text-color, #ffffff);
+            --sec-bg: var(--tg-theme-secondary-bg-color, #f1f1f1);
+        }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 70px; }
+        
+        /* Top Fixed Bar */
+        .header { position: sticky; top: 0; background: var(--sec-bg); padding: 12px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+        .balance { color: #2ecc71; font-weight: bold; background: rgba(46,204,113,0.1); padding: 4px 8px; border-radius: 8px; }
 
-  <!-- Telegram Mini App -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        /* Tabs */
+        .nav { display: flex; background: var(--sec-bg); border-bottom: 1px solid #ddd; }
+        .nav-item { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; }
+        .nav-item.active { border-bottom: 2px solid var(--btn); color: var(--btn); font-weight: bold; }
 
-  <!-- Monetag -->
-  <script src="//libtl.com/sdk.js"
-    data-zone="10276123"
-    data-sdk="show_10276123"></script>
+        .page { display: none; padding: 15px; }
+        .page.active { display: block; }
 
-  <!-- App Logic -->
-  <script type="module" src="app.js"></script>
+        /* Chat UI */
+        #chat-window { height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: var(--bg); }
+        .m { margin-bottom: 8px; font-size: 14px; }
+        .m b { color: var(--btn); }
+        .chat-input-row { display: flex; gap: 8px; }
 
-  <style>
-    body{font-family:Arial;background:#020617;color:#e5e7eb;padding:15px}
-    button,input{width:100%;padding:10px;margin-top:8px}
-    table{width:100%;font-size:13px;margin-top:8px}
-    .row{display:flex;gap:8px;margin-top:8px}
-  </style>
+        /* Forms & Tables */
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background: var(--bg); color: var(--text); }
+        button { background: var(--btn); color: var(--btn-txt); border: none; padding: 10px 15px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .status-pending { color: orange; }
+
+        .status-approved { color: green; font-weight: bold; }
+        
+        /* Reward Button */
+        .ad-btn { background: linear-gradient(45deg, #f1c40f, #f39c12); margin-bottom: 15px; }
+    </style>
 </head>
 <body>
 
-<h2>👤 <span id="username"></span></h2>
-<h3>💰 Balance: ₱<span id="balance">0.000</span></h3>
-
-<button onclick="watchAd()">Watch Ad (+₱0.015)</button>
-
-<h3>🏧 Withdraw (GCash)</h3>
-<input id="gcash" placeholder="GCash Number">
-<input id="amount" type="number" placeholder="Min ₱0.015">
-<button onclick="requestWithdraw()">Request Withdrawal</button>
-
-<h3>📜 Withdrawal History</h3>
-<table border="1">
-  <thead>
-    <tr><th>Date</th><th>GCash</th><th>Amount</th><th>Status</th></tr>
-  </thead>
-  <tbody id="history"></tbody>
-</table>
-
-<div class="row">
-  <button onclick="prevUserPage()">⬅ Prev</button>
-  <button onclick="nextUserPage()">Next ➡</button>
+<div class="header">
+    <div id="u-name">👤 Loading...</div>
+    <div id="u-balance" class="balance">₱ 0.000</div>
 </div>
 
-<hr>
-
-<button onclick="ownerLogin()">Owner Dashboard</button>
-
-<div id="owner" style="display:none">
-  <h3>📊 Owner Dashboard</h3>
-  <p>Total Users: <span id="totalUsers">0</span></p>
-  <p>Total Withdrawn: ₱<span id="totalWithdraw">0</span></p>
-  <p>Total Pending: ₱<span id="totalPending">0</span></p>
-
-  <table border="1">
-    <thead>
-      <tr><th>User</th><th>GCash</th><th>Amount</th><th>Status</th><th>Action</th></tr>
-    </thead>
-    <tbody id="adminTable"></tbody>
-  </table>
-
-  <div class="row">
-    <button onclick="prevAdminPage()">⬅ Prev</button>
-    <button onclick="nextAdminPage()">Next ➡</button>
-  </div>
+<div class="nav">
+    <div class="nav-item active" onclick="tab('home')">Home/Chat</div>
+    <div class="nav-item" onclick="tab('withdraw')">Withdraw</div>
+    <div class="nav-item" onclick="adminLogin()">Owner</div>
 </div>
 
+<!-- PAGE: HOME -->
+<div id="home" class="page active">
+    <button class="ad-btn" id="claimReward">📺 Watch Ad (+₱0.005)</button>
+    <div id="chat-window"></div>
+    <div class="chat-input-row">
+        <input type="text" id="chatMsg" placeholder="Type a message...">
+        <button id="sendChat" style="width: auto;">Send</button>
+    </div>
+</div>
+
+<!-- PAGE: WITHDRAW -->
+<div id="withdraw" class="page">
+    <h3>GCash Withdrawal</h3>
+    <p style="font-size: 12px; color: var(--hint);">Minimum withdrawal: ₱0.015</p>
+    <input type="text" id="gName" placeholder="GCash Account Name">
+    <input type="text" id="gNum" placeholder="GCash Number (09...)">
+    <input type="number" id="gAmt" step="0.001" placeholder="Amount (e.g. 0.015)">
+    <button onclick="handleWithdraw()">Request Payout</button>
+
+    <h4>History</h4>
+    <table id="historyTable">
+        <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- PAGE: OWNER -->
+<div id="admin" class="page">
+    <h3>Pending Approvals</h3>
+    <table>
+        <thead><tr><th>User</th><th>GCash</th><th>Amt</th><th>Action</th></tr></thead>
+        <tbody id="adminBody"></tbody>
+    </table>
+</div>
+
+<script type="module" src="app.js"></script>
+
+<script>
+    function tab(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+    function adminLogin() {
+        const p = prompt("Admin Password:");
+        if(p === "Propetas6") tab('admin');
+        else alert("Unauthorized");
+    }
+</script>
 </body>
 </html>
