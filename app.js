@@ -1,180 +1,149 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, addDoc,
-  collection, query, where, orderBy, limit, startAfter,
-  getDocs, serverTimestamp, onSnapshot
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+ChatGPT | Midjourney:
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, 
+    serverTimestamp, where, doc, setDoc, getDoc, updateDoc, increment 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* Firebase Config */
 const firebaseConfig = {
-  apiKey: "AIzaSyBwpa8mA83JAv2A2Dj0rh5VHwodyv5N3dg",
-  authDomain: "freegcash-ads.firebaseapp.com",
-  projectId: "freegcash-ads",
-  storageBucket: "freegcash-ads.firebasestorage.app",
-  messagingSenderId: "608086825364",
-  appId: "1:608086825364:web:3a8e628d231b52c6171781"
+    apiKey: "AIzaSyDMGU5X7BBp-C6tIl34Uuu5N9MXAVFTn7c",
+    authDomain: "paper-house-inc.firebaseapp.com",
+    projectId: "paper-house-inc",
+    storageBucket: "paper-house-inc.firebasestorage.app",
+    messagingSenderId: "658389836376",
+    appId: "1:658389836376:web:2ab1e2743c593f4ca8e02d"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* Telegram */
+// 1. Telegram Identity
 const tg = window.Telegram.WebApp;
+tg.ready();
 tg.expand();
-const user = tg.initDataUnsafe.user;
-const uid = String(user.id);
 
-/* Instant username */
-document.getElementById("username").innerText = user.username || "User";
+const user = tg.initDataUnsafe?.user || { id: "test_user", username: "Guest", first_name: "Web" };
+const userId = String(user.id);
+const fullUsername = `@${user.username || user.first_name}`;
 
-/* Globals */
-const OWNER_PASS = "Propetas6";
-let balance = 0;
-let userLast = null;
-let adminLast = null;
+document.getElementById('u-name').innerText = `👤 ${fullUsername}`;
 
-/* Init User */
+// 2. Real-time User Data & Balance
+const userRef = doc(db, "users", userId);
 async function initUser() {
-  const ref = doc(db, "users", uid);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      username: user.username,
-      balance: 0,
-      country: "PH",
-      createdAt: serverTimestamp()
+    const snap = await getDoc(userRef);
+    if(!snap.exists()) {
+        await setDoc(userRef, { username: fullUsername, balance: 0.010 }); // Starting bonus
+    }
+    onSnapshot(userRef, (d) => {
+        document.getElementById('u-balance').innerText = `₱ ${d.data().balance.toFixed(3)}`;
     });
-  }
-
-  onSnapshot(ref, d => {
-    balance = d.data().balance;
-    document.getElementById("balance").innerText = balance.toFixed(3);
-  });
-
-  loadUserHistory();
 }
-
-/* Ads Reward */
-window.watchAd = () => {
-  show_10276123().then(() => {
-    updateDoc(doc(db, "users", uid), { balance: balance + 0.015 });
-  });
-};
-
-/* Withdraw */
-window.requestWithdraw = async () => {
-  const gcash = document.getElementById("gcash").value;
-  const amount = Number(document.getElementById("amount").value);
-
-  if (amount < 0.015 || amount > balance) {
-    alert("Invalid amount");
-    return;
-  }
-
-  await addDoc(collection(db, "withdrawals"), {
-    uid,
-    username: user.username,
-    gcash,
-    amount,
-    status: "pending",
-    createdAt: serverTimestamp()
-  });
-
-  await updateDoc(doc(db, "users", uid), {
-    balance: balance - amount
-  });
-};
-
-/* User Pagination */
-async function loadUserHistory(next = false) {
-  let q = query(
-    collection(db, "withdrawals"),
-    where("uid", "==", uid),
-    orderBy("createdAt", "desc"),
-    limit(15)
-  );
-
-  if (next && userLast) q = query(q, startAfter(userLast));
-
-  const snap = await getDocs(q);
-  const h = document.getElementById("history");
-  h.innerHTML = "";
-
-  snap.forEach(d => {
-    const w = d.data();
-    h.innerHTML += `
-      <tr>
-        <td>${w.createdAt?.toDate().toLocaleString()}</td>
-        <td>${w.gcash}</td>
-        <td>₱${w.amount}</td>
-        <td>${w.status}</td>
-      </tr>`;
-  });
-
-  userLast = snap.docs[snap.docs.length - 1];
-}
-
-window.nextUserPage = () => loadUserHistory(true);
-window.prevUserPage = () => loadUserHistory(false);
-
-/* Owner Dashboard */
-window.ownerLogin = async () => {
-  if (prompt("Owner password") !== OWNER_PASS) return;
-
-  document.getElementById("owner").style.display = "block";
-
-  const users = await getDocs(collection(db, "users"));
-  document.getElementById("totalUsers").innerText = users.size;
-
-  let withdrawn = 0, pending = 0;
-  const all = await getDocs(collection(db, "withdrawals"));
-
-  all.forEach(d => {
-    const w = d.data();
-    if (w.status === "approved") withdrawn += w.amount;
-    if (w.status === "pending") pending += w.amount;
-  });
-
-  document.getElementById("totalWithdraw").innerText = withdrawn.toFixed(3);
-  document.getElementById("totalPending").innerText = pending.toFixed(3);
-
-  loadAdminPage();
-};
-
-/* Admin Pagination */
-async function loadAdminPage(next = false) {
-  let q = query(
-    collection(db, "withdrawals"),
-    orderBy("createdAt", "desc"),
-    limit(15)
-  );
-
-  if (next && adminLast) q = query(q, startAfter(adminLast));
-
-  const snap = await getDocs(q);
-  const t = document.getElementById("adminTable");
-  t.innerHTML = "";
-
-  snap.forEach(d => {
-    const w = d.data();
-    t.innerHTML += `
-      <tr>
-        <td>${w.username}</td>
-        <td>${w.gcash}</td>
-        <td>₱${w.amount}</td>
-        <td>${w.status}</td>
-        <td><button onclick="approve('${d.id}')">Approve</button></td>
-      </tr>`;
-  });
-
-  adminLast = snap.docs[snap.docs.length - 1];
-}
-
-window.nextAdminPage = () => loadAdminPage(true);
-window.prevAdminPage = () => loadAdminPage(false);
-
-window.approve = id =>
-  updateDoc(doc(db, "withdrawals", id), { status: "approved" });
-
 initUser();
+
+// 3. Global Real-time Chat (3 Days Filter)
+const chatWindow = document.getElementById('chat-window');
+const qChat = query(
+    collection(db, "messages"),
+    where("timestamp", ">=", new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)),
+    orderBy("timestamp", "asc")
+);
+
+onSnapshot(qChat, (snap) => {
+    chatWindow.innerHTML = "";
+    snap.forEach(d => {
+        const m = d.data();
+        chatWindow.innerHTML += `<div class="m"><b>${m.user}:</b> ${m.text}</div>`;
+    });
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+});
+
+document.getElementById('sendChat').onclick = async () => {
+    const input = document.getElementById('chatMsg');
+    if(!input.value) return;
+    await addDoc(collection(db, "messages"), {
+        user: fullUsername,
+        text: input.value,
+        timestamp: serverTimestamp()
+    });
+    input.value = "";
+};
+
+// 4. Withdrawal Logic (Min 0.015)
+window.handleWithdraw = async () => {
+    const name = document.getElementById('gName').value;
+
+    const num = document.getElementById('gNum').value;
+    const amt = parseFloat(document.getElementById('gAmt').value);
+    
+    const snap = await getDoc(userRef);
+    const currentBalance = snap.data().balance;
+
+    if(amt < 0.015) return alert("Minimum withdrawal is ₱0.015");
+    if(amt > currentBalance) return alert("Insufficient balance");
+    if(!name || !num) return alert("Fill all fields");
+
+    await addDoc(collection(db, "withdrawals"), {
+        uid: userId,
+        user: fullUsername,
+        gcashName: name,
+        gcashNum: num,
+        amount: amt,
+        status: "pending",
+        timestamp: serverTimestamp()
+    });
+
+    await updateDoc(userRef, { balance: increment(-amt) });
+    alert("Request Sent!");
+};
+
+// 5. Withdrawal History Table
+const qHistory = query(collection(db, "withdrawals"), where("uid", "==", userId));
+onSnapshot(qHistory, (snap) => {
+    const tbody = document.querySelector("#historyTable tbody");
+    tbody.innerHTML = "";
+    snap.forEach(d => {
+        const data = d.data();
+        tbody.innerHTML += `<tr><td>${data.timestamp?.toDate().toLocaleDateString() || ''}</td><td>₱${data.amount}</td><td class="status-${data.status}">${data.status}</td></tr>`;
+    });
+});
+
+// 6. Owner Dashboard (Live Approval)
+const qAdmin = query(collection(db, "withdrawals"), where("status", "==", "pending"));
+onSnapshot(qAdmin, (snap) => {
+    const tbody = document.getElementById('adminBody');
+    tbody.innerHTML = "";
+    snap.forEach(d => {
+        const data = d.data();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${data.user}</td>
+            <td>${data.gcashNum}</td>
+            <td>₱${data.amount}</td>
+            <td>
+                <button onclick="approve('${d.id}')" style="background:#27ae60; padding:5px; margin-bottom:2px;">✔</button>
+                <button onclick="reject('${d.id}', '${data.uid}', ${data.amount})" style="background:#c0392b; padding:5px;">✖</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+});
+
+window.approve = async (id) => {
+    await updateDoc(doc(db, "withdrawals", id), { status: "approved" });
+};
+
+window.reject = async (id, uid, amt) => {
+    await updateDoc(doc(db, "withdrawals", id), { status: "rejected" });
+    await updateDoc(doc(db, "users", uid), { balance: increment(amt) }); // Refund user
+};
+
+// 7. Simulated Ad Reward
+document.getElementById('claimReward').onclick = async () => {
+    tg.showConfirm("Watch ad for ₱0.005?", async (ok) => {
+        if(ok) {
+            await updateDoc(userRef, { balance: increment(0.005) });
+            tg.showAlert("₱0.005 added to balance!");
+        }
+    });
+};
