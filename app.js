@@ -1,174 +1,395 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, query, where, orderBy, limit, startAfter, endBefore, getDocs, limitToLast, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
+// --- Firebase Configuration ---
 const firebaseConfig = {
-  apiKey: "AIzaSyDMGU5X7BBp-C6tIl34Uuu5N9MXAVFTn7c",
-  authDomain: "paper-house-inc.firebaseapp.com",
-  projectId: "paper-house-inc",
-  storageBucket: "paper-house-inc.firebasestorage.app",
-  messagingSenderId: "658389836376",
-  appId: "1:658389836376:web:2ab1e2743c593f4ca8e02d"
+    apiKey: "AIzaSyDMGU5X7BBp-C6tIl34Uuu5N9MXAVFTn7c",
+    authDomain: "paper-house-inc.firebaseapp.com",
+    projectId: "paper-house-inc",
+    storageBucket: "paper-house-inc.firebasestorage.app",
+    messagingSenderId: "658389836376",
+    appId: "1:658389836376:web:2ab1e2743c593f4ca8e02d"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Telegram Setup
+// --- Telegram Web App Initialization ---
 const tg = window.Telegram?.WebApp;
 tg?.ready();
+tg?.expand(); // Ensure the app is expanded
+
 const tgUser = tg?.initDataUnsafe?.user;
-const userId = tgUser?.id?.toString() || "local_user_test";
-const username = tgUser ? `@${tgUser.username || tgUser.first_name}` : "Guest";
+const userId = tgUser?.id?.toString() || `local_test_${Date.now()}`; // Use Telegram ID or a test ID
+const username = tgUser ? `@${tgUser.username || tgUser.first_name}` : "Guest User";
+document.getElementById("userBar").innerText = `👤 User: ${username}`;
 
-document.getElementById("userBar").innerText = "👤 User: " + username;
+let userData = { balance: 0, cooldowns: {} };
 
-let currentBalance = 0;
+// --- Pagination State ---
+let userLastDoc = null;
+let userFirstDoc = null;
+let adminLastDoc = null;
+let adminFirstDoc = null;
+let userCurrentPage = 1;
+let adminCurrentPage = 1;
+const PAGE_SIZE = 5; // Number of items per page
 
-// Initialize User Data
-async function initUser() {
+// --- Initialize User Data and UI ---
+async function initializeApp() {
     const userRef = doc(db, "users", userId);
-    const snap = await getDoc(userRef);
+    const userSnap = await getDoc(userRef);
 
-    if (!snap.exists()) {
-        await setDoc(userRef, { balance: 0, username: username });
+    // If user doesn't exist, create them
+    if (!userSnap.exists()) {
+        await setDoc(userRef, { username: username, balance: 0, cooldowns: {} });
     }
 
-    onSnapshot(userRef, (doc) => {
-        if (doc.exists()) {
-            currentBalance = doc.data().balance;
-            document.getElementById("balanceVal").innerText = currentBalance.toFixed(2);
-        }
+    // Real-time updates for user data
+    onSnapshot(userRef, (docSnapshot) => {
+        userData = docSnapshot.data();
+        document.getElementById("balanceVal").innerText = userData.balance.toFixed(3);
+        updateCooldownUI();
     });
 
-    // Auto In-App Ad Logic
-    if (window.show_10337853) {
-        show_10337853({
+    // Trigger initial automatic ads
+    triggerAutomaticAds();
+    
+    // Set initial clock and update UI
+    updateClock();
+    setInterval(updateClock, 1000); // Update clock every second
+    setInterval(updateCooldownUI, 1000); // Update cooldowns every second
+}
+
+// --- Automatic Ads Logic ---
+function triggerAutomaticAds() {
+    // 1. Specific In-App Interstitial from your request
+    if (window.show_10276123) {
+        show_10276123({
             type: 'inApp',
             inAppSettings: { frequency: 2, capping: 0.1, interval: 30, timeout: 5, everyPage: false }
         });
     }
+
+    // 2. Random Interstitial every 3 Minutes
+    const lastRandAdTime = parseInt(localStorage.getItem('last_rand_ad_time') || '0');
+    const showRandomAd = () => {
+        const zones = [window.show_10337853, window.show_10337795, window.show_10276123]; // Your three random zones
+        const randomZone = zones[Math.floor(Math.random() * zones.length)];
+        if (randomZone) {
+            randomZone().then(() => {
+                localStorage.setItem('last_rand_ad_time', Date.now());
+            }).catch(err => console.error("Random ad failed:", err));
+        }
+    };
+
+    // Show ad immediately if it's been over 3 mins since last one
+    if (Date.now() - lastRandAdTime > 180000) { // 180,000 ms = 3 minutes
+        showRandomAd();
+    }
+    // Set interval for subsequent ads
+    setInterval(showRandomAd, 180000); // Trigger every 3 minutes
 }
 
-// Global Nav Function
+// --- Navigation Functions ---
 window.nav = (pageId) => {
-    document.querySelectorAll('.container').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
     document.getElementById(pageId).classList.remove('hidden');
-    if (pageId === 'page-withdraw') listenToUserWithdrawals();
-    if (pageId === 'page-admin') listenToAdminWithdrawals();
+    // Reset pagination state when navigating
+    if (pageId === 'page-withdraw') {
+        userCurrentPage = 1; userFirstDoc = null; userLastDoc = null;
+        fetchUserWithdrawals();
+    }
+    if (pageId === 'page-admin') {
+        adminCurrentPage = 1; adminFirstDoc = null; adminLastDoc = null;
+        fetchAdminWithdrawals();
+    }
 };
 
-// Ad Handling (3 Ads Combined, No Cooldown)
-window.handleAdTask = async (taskId) => {
-    const btn = document.getElementById(`task${taskId}`);
+// --- Task & Ad Button Logic ---
+window.runTask = async (id) => {
+    const btn = document.getElementById(`btn-task${id}`);
+    const claimBtn = document.getElementById(`claim-${id}`);
     btn.disabled = true;
     btn.innerText = "Watching Ads...";
 
     try {
-        // Sequentially show 3 ads
-        await show_10276123();
-        await show_10337795();
-        await show_10337853();
+        // Execute ads based on task ID
+        switch(id) {
+            case 'T1': // Task #1
+                await show_10337853(); await show_10337795(); await show_10276123();
+                break;
+            case 'T2': // Task #2
+                await show_10337853(); await show_10276123(); await show_10337795();
+                break;
+            case 'T3': // Task #3
+                await show_10276123(); await show_10337795(); await show_10337853();
+                break;
+            case 'B1': // Bonus Task #1 (Example sequence)
+                await show_10276123(); await show_10337853(); await show_10337795();
+                break;
+            case 'B2': // Bonus Task #2 (Example sequence)
+                await show_10337795(); await show_10276123(); await show_10337853();
+                break;
+            case 'B3': // Bonus Task #3 (Example sequence)
+                await show_10337853(); await show_10276123(); await show_10337795();
+                break;
+            default:
+                console.warn("Unknown Task ID:", id);
+                alert("Task not found. Please try again.");
+                btn.disabled = false;
+                btn.innerText = `Task #${id}`;
+                return;
+        }
 
-        // Unlock Claim Button
+        // Success: Hide task button, show claim button
         btn.classList.add('hidden');
-        document.getElementById(`claim${taskId}`).classList.remove('hidden');
-    } catch (e) {
-        alert("Ad failed. Please try again.");
+        claimBtn.classList.remove('hidden');
+        alert("Ads completed! You can now claim your reward.");
+    } catch (error) {
+        console.error("Ad sequence error:", error);
+        alert("Oops! Ad failed to load properly. Please try again.");
         btn.disabled = false;
-        btn.innerText = "Retry Task";
+        // Reset button text based on task type
+        btn.innerText = id.startsWith('B') ? `💎 Bonus Task #${id.substring(1)} 💎` : `🍍Task #${id.substring(1)}🍍`;
     }
 };
 
-window.claimReward = async (taskId) => {
+window.claim = async (id, reward) => {
     const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, { balance: currentBalance + 0.02 });
-    
+    const cooldownEnd = Date.now() + (20 * 60 * 1000); // 20 minutes in milliseconds
+
+    await updateDoc(userRef, {
+        balance: userData.balance + reward,
+        [`cooldowns.${id}`]: cooldownEnd // Update specific task cooldown
+    });
+
     alert("🎉Congratulations🎉 you earned some money!!😍🍍🎉");
-    
-    // Reset UI for next round (No cooldown)
-    document.getElementById(`claim${taskId}`).classList.add('hidden');
-    const tBtn = document.getElementById(`task${taskId}`);
-    tBtn.classList.remove('hidden');
-    tBtn.disabled = false;
-    tBtn.innerText = taskId.toString().startsWith('B') ? "💎 BONUS TASK 💎" : `🤑🍍Task #${taskId}🍍🤑`;
+
+    // Reset UI for the task
+    document.getElementById(`claim-${id}`).classList.add('hidden');
+    const taskBtn = document.getElementById(`btn-task${id}`);
+    taskBtn.classList.remove('hidden');
+    taskBtn.disabled = false; // Re-enable for next round
+    // Reset button text based on task type
+    taskBtn.innerText = id.startsWith('B') ? `💎 Bonus Task #${id.substring(1)} 💎` : `🍍Task #${id.substring(1)}🍍`;
 };
 
-// Withdrawal Logic
-window.submitWithdraw = async () => {
-    const name = document.getElementById("gcName").value;
-    const num = document.getElementById("gcNum").value;
-    const amt = parseFloat(document.getElementById("gcAmt").value);
+// --- Cooldown UI Update ---
+function updateCooldownUI() {
+    const allTaskIds = ['T1', 'T2', 'T3', 'B1', 'B2', 'B3']; // All task IDs including bonus
+    allTaskIds.forEach(id => {
+        const expiry = userData.cooldowns?.[id] || 0;
+        const btn = document.getElementById(`btn-task${id}`);
+        const cdDisplay = document.getElementById(`cooldown${id}`);
+        
+        if (!btn || !cdDisplay) return; // Skip if elements don't exist yet
 
-    if (!name || !num || amt < 0.5) return alert("Fill all fields. Min 0.50");
-    if (amt > currentBalance) return alert("Insufficient Balance");
+        const remainingMillis = expiry - Date.now();
+        if (remainingMillis > 0) {
+            btn.disabled = true;
+            const remainingSecs = Math.ceil(remainingMillis / 1000);
+            const mins = Math.floor(remainingSecs / 60);
+            const secs = remainingSecs % 60;
+            cdDisplay.innerText = `Cooldown: ${mins}m ${secs}s`;
+        } else {
+            btn.disabled = false;
+            cdDisplay.innerText = ""; // Clear cooldown text if ready
+            // Ensure original button text is restored if cooldown just ended
+            if (btn.innerText.includes("Watching Ads...") || btn.innerText.includes("Claim ₱")) {
+                btn.innerText = id.startsWith('B') ? `💎 Bonus Task #${id.substring(1)} 💎` : `🍍Task #${id.substring(1)}🍍`;
+            }
+        }
+    });
+}
+
+// --- Withdrawal Logic ---
+window.submitWithdraw = async () => {
+    const nameInput = document.getElementById("wName");
+    const numInput = document.getElementById("wNum");
+    const amtInput = document.getElementById("wAmt");
+
+    const name = nameInput.value.trim();
+    const num = numInput.value.trim();
+    const amt = parseFloat(amtInput.value);
+
+    if (isNaN(amt) || amt < 0.015) return alert("Minimum withdrawal is ₱0.015");
+    if (amt > userData.balance) return alert("Insufficient balance. You only have ₱" + userData.balance.toFixed(3));
+    if (!name || !num) return alert("Please fill in your GCash Name and Number.");
 
     await addDoc(collection(db, "withdrawals"), {
-        userId, username, name, num, amount: amt, status: "pending", timestamp: Date.now()
+        userId, username, name, num, amount: amt, status: "pending", time: Timestamp.now() // Use Firestore Timestamp for better sorting
     });
 
-    await updateDoc(doc(db, "users", userId), { balance: currentBalance - amt });
-    alert("Request Submitted!");
+    await updateDoc(doc(db, "users", userId), { balance: userData.balance - amt });
+
+    alert("Your withdrawal request has been submitted!");
+    nameInput.value = ''; // Clear form
+    numInput.value = '';
+    amtInput.value = '';
+    nav('page-home'); // Go back home after submission
 };
 
-function listenToUserWithdrawals() {
-    const q = query(collection(db, "withdrawals"), where("userId", "==", userId));
-    onSnapshot(q, (snap) => {
-        const tbody = document.querySelector("#userWithdrawTable tbody");
-        tbody.innerHTML = "";
-        snap.forEach(d => {
-            const data = d.data();
-            tbody.innerHTML += `<tr>
-                <td>${new Date(data.timestamp).toLocaleDateString()}</td>
-                <td>₱${data.amount.toFixed(2)}</td>
-                <td style="color:${data.status === 'pending' ? 'orange' : 'green'}">${data.status.toUpperCase()}</td>
-            </tr>`;
-        });
+// --- User Withdrawal Table Pagination ---
+async function fetchUserWithdrawals(isNext = true) {
+    let userQuery;
+    const withdrawalsRef = collection(db, "withdrawals");
+    const baseQuery = query(withdrawalsRef, where("userId", "==", userId), orderBy("time", "desc"));
+
+    if (isNext && userCurrentPage > 1 && userLastDoc) {
+        userQuery = query(baseQuery, startAfter(userLastDoc), limit(PAGE_SIZE));
+    } else if (!isNext && userCurrentPage > 1 && userFirstDoc) {
+        userQuery = query(baseQuery, endBefore(userFirstDoc), limitToLast(PAGE_SIZE));
+    } else {
+        userQuery = query(baseQuery, limit(PAGE_SIZE));
+    }
+
+    const snap = await getDocs(userQuery);
+    if (snap.empty && (userCurrentPage > 1 || (!isNext && userCurrentPage === 1))) {
+        // If empty and not first page (or trying to go back from first page), stay on current page
+        if (isNext) userCurrentPage--;
+        else userCurrentPage++; // Revert page change if no prev results
+        return;
+    }
+    if (snap.empty) { // If empty on first load
+        renderWithdrawalTable("userWithdrawTable", snap); // Render empty table
+        userFirstDoc = null; userLastDoc = null;
+        updatePaginationInfo("user");
+        return;
+    }
+
+    userFirstDoc = snap.docs[0];
+    userLastDoc = snap.docs[snap.docs.length - 1];
+    renderWithdrawalTable("userWithdrawTable", snap);
+    updatePaginationInfo("user");
+}
+
+function renderWithdrawalTable(tableId, snap) {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    tbody.innerHTML = "";
+    if (snap.empty) {
+        tbody.innerHTML = `<tr><td colspan="3">No withdrawal requests found.</td></tr>`;
+        return;
+    }
+    snap.forEach(doc => {
+        const data = doc.data();
+        const date = data.time.toDate().toLocaleDateString(); // Convert Firestore Timestamp to Date
+        const status = data.status.toUpperCase();
+        const statusColor = status === 'PENDING' ? 'orange' : (status === 'APPROVED' ? 'green' : 'red');
+        tbody.innerHTML += `<tr>
+            <td>${date}</td>
+            <td>₱${data.amount.toFixed(3)}</td>
+            <td style="color: ${statusColor}; font-weight: bold;">${status}</td>
+        </tr>`;
     });
 }
 
-// Admin Logic
-window.accessAdmin = () => {
-    const pw = prompt("Enter Password:");
-    if (pw === "Propetas6") nav('page-admin');
+function updatePaginationInfo(type) {
+    const pageInfoElement = document.getElementById(`${type}PageInfo`);
+    if (pageInfoElement) {
+        pageInfoElement.innerText = `Page ${type === 'user' ? userCurrentPage : adminCurrentPage}`;
+    }
+}
+
+window.changeUserPage = async (next) => {
+    if (next) userCurrentPage++;
+    else userCurrentPage--;
+    
+    if (userCurrentPage < 1) userCurrentPage = 1; // Prevent going below page 1
+    await fetchUserWithdrawals(next);
 };
 
-function listenToAdminWithdrawals() {
-    const q = query(collection(db, "withdrawals"), where("status", "==", "pending"));
-    onSnapshot(q, (snap) => {
-        const tbody = document.querySelector("#adminWithdrawTable tbody");
-        tbody.innerHTML = "";
-        snap.forEach(d => {
-            const data = d.data();
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${data.username}</td>
-                <td>${data.num}<br>${data.name}</td>
-                <td>₱${data.amount.toFixed(2)}</td>
-                <td><button onclick="approveNow('${d.id}')">Approve</button></td>
-            `;
-            tbody.appendChild(row);
-        });
+// --- Admin Dashboard Logic ---
+window.adminCheck = () => {
+    const password = prompt("Enter Owner Password:");
+    if (password === "Propetas6") {
+        nav('page-admin');
+    } else {
+        alert("Access Denied!");
+    }
+};
+
+async function fetchAdminWithdrawals(isNext = true) {
+    let adminQuery;
+    const withdrawalsRef = collection(db, "withdrawals");
+    const baseQuery = query(withdrawalsRef, where("status", "==", "pending"), orderBy("time", "asc"));
+
+    if (isNext && adminCurrentPage > 1 && adminLastDoc) {
+        adminQuery = query(baseQuery, startAfter(adminLastDoc), limit(PAGE_SIZE));
+    } else if (!isNext && adminCurrentPage > 1 && adminFirstDoc) {
+        adminQuery = query(baseQuery, endBefore(adminFirstDoc), limitToLast(PAGE_SIZE));
+    } else {
+        adminQuery = query(baseQuery, limit(PAGE_SIZE));
+    }
+
+    const snap = await getDocs(adminQuery);
+    if (snap.empty && (adminCurrentPage > 1 || (!isNext && adminCurrentPage === 1))) {
+        if (isNext) adminCurrentPage--;
+        else adminCurrentPage++;
+        return;
+    }
+    if (snap.empty) {
+        renderAdminTable(snap);
+        adminFirstDoc = null; adminLastDoc = null;
+        updatePaginationInfo("admin");
+        return;
+    }
+
+    adminFirstDoc = snap.docs[0];
+    adminLastDoc = snap.docs[snap.docs.length - 1];
+    renderAdminTable(snap);
+    updatePaginationInfo("admin");
+}
+
+function renderAdminTable(snap) {
+    const tbody = document.querySelector("#adminWithdrawTable tbody");
+    tbody.innerHTML = "";
+    if (snap.empty) {
+        tbody.innerHTML = `<tr><td colspan="5">No pending withdrawal requests.</td></tr>`;
+        return;
+    }
+    snap.forEach(doc => {
+        const data = doc.data();
+        tbody.innerHTML += `<tr>
+            <td>${data.username || 'N/A'}</td>
+            <td>${data.num}<br>${data.name}</td>
+            <td>₱${data.amount.toFixed(3)}</td>
+            <td>${data.status.toUpperCase()}</td>
+            <td><button class="admin-approve-btn" onclick="approveWithdrawal('${doc.id}')">Approve</button></td>
+        </tr>`;
     });
 }
 
-window.approveNow = async (id) => {
-    await updateDoc(doc(db, "withdrawals", id), { status: "approved" });
-    alert("Paid successfully!");
+window.approveWithdrawal = async (id) => {
+    const withdrawalRef = doc(db, "withdrawals", id);
+    await updateDoc(withdrawalRef, { status: "approved" });
+    alert("Withdrawal approved!");
+    // Refresh the admin list to remove the approved item
+    fetchAdminWithdrawals(); 
 };
 
-// Footer Clock
-setInterval(() => {
-    const now = new Date();
-    document.getElementById("footerTime").innerText = `PAPERHOUSE INC | ${now.toLocaleString()}`;
-}, 1000);
+window.changeAdminPage = async (next) => {
+    if (next) adminCurrentPage++;
+    else adminCurrentPage--;
 
-// Start app
-initUser();
+    if (adminCurrentPage < 1) adminCurrentPage = 1;
+    await fetchAdminWithdrawals(next);
+};
 
-// Mock Ad functions (These are replaced by real Monetag scripts if they exist)
+// --- Clock and Initialization ---
+function updateClock() {
+    document.getElementById("footerClock").innerText = `PAPERHOUSE INC | ${new Date().toLocaleString()}`;
+}
+
+// Initialize the app
+initializeApp();
+
+// Mock Ad functions for local testing if Monetag scripts aren't loaded
 if (!window.show_10276123) {
-    window.show_10276123 = () => new Promise(res => { console.log("Ad 1"); res(); });
-    window.show_10337795 = () => new Promise(res => { console.log("Ad 2"); res(); });
-    window.show_10337853 = () => new Promise(res => { console.log("Ad 3"); res(); });
+    console.warn("Monetag SDKs not found. Using mock functions for ads.");
+    const mockAdDelay = 1500; // 1.5 seconds per mock ad
+    window.show_10276123 = () => new Promise(res => { console.log("Mock Ad 1 (10276123)"); setTimeout(res, mockAdDelay); });
+    window.show_10337795 = () => new Promise(res => { console.log("Mock Ad 2 (10337795)"); setTimeout(res, mockAdDelay); });
+    window.show_10337853 = () => new Promise(res => { console.log("Mock Ad 3 (10337853)"); setTimeout(res, mockAdDelay); });
 }
