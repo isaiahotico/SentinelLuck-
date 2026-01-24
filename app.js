@@ -1,4 +1,3 @@
-ChatGPT | Midjourney:
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
     getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, 
