@@ -1,310 +1,75 @@
-ChatGPT | Midjourney:
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAPERHOUSE INC - REWARDS</title>
-    
-    <!-- Monetag SDKs - ENSURE THESE ARE YOUR CORRECT TAGS -->
-    <script src='//libtl.com/sdk.js' data-zone='10337853' data-sdk='show_10337853'></script>
-    <script src='//libtl.com/sdk.js' data-zone='10337795' data-sdk='show_10337795'></script>
-    <script src='//libtl.com/sdk.js' data-zone='10276123' data-sdk='show_10276123'></script>
-    
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <style>
-        :root {
-            --sky-blue: #87CEEB; /* Light Sky Blue */
-            --yellow-green: #9ACD32; /* Yellow Green */
-            --classical-yellow: #FFD700; /* Gold */
-            --reward-orange: #FF9800; /* Orange for Claim Buttons */
-            --reward-orange-dark: #E68A00; /* Darker Orange Shadow */
-            --text-dark: #333;
-            --accent-color: #2e7d32; /* Dark Green */
-            --bonus-color: #8A2BE2; /* Blue Violet for Bonus Tasks */
-            --bonus-color-shadow: #6A1FB6; /* Darker Blue Violet */
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telegram GCash Rewards</title>
 
-        body {
-            margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--sky-blue);
-            transition: background 0.5s ease-in-out;
-            min-height: 100vh;
-            display: flex; flex-direction: column;
-            overflow-x: hidden; /* Prevent horizontal scroll */
-        }
+  <!-- Telegram Mini App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-        /* Rainbow Animation */
-        body.rainbow-mode {
-            animation: rainbowBG 6s linear infinite alternate;
-        }
-        @keyframes rainbowBG {
-            0% { background-color: #ffadad; } /* Light Red */
-            20% { background-color: #ffd6a5; } /* Light Orange */
-            40% { background-color: #fdffb6; } /* Light Yellow */
-            60% { background-color: #caffbf; } /* Light Green */
-            80% { background-color: #9bf6ff; } /* Light Cyan */
-            100% { background-color: #a0c4ff; } /* Light Blue */
-        }
+  <!-- Monetag -->
+  <script src="//libtl.com/sdk.js"
+    data-zone="10276123"
+    data-sdk="show_10276123"></script>
 
-        header {
-            background: rgba(255, 255, 255, 0.25);
-            padding: 15px 10px;
-            text-align: center;
-            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        #userBar {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: var(--text-dark);
+  <!-- App Logic -->
+  <script type="module" src="app.js"></script>
 
-            margin-bottom: 4px;
-        }
-        #balanceDisplay {
-            font-size: 1.8em;
-            color: var(--accent-color);
-            font-weight: 900;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
-        }
-
-        .container {
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .btn {
-            background-color: var(--yellow-green);
-            color: var(--text-dark);
-            border: none;
-            padding: 15px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            margin: 10px 5px;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px var(--accent-color);
-            display: inline-block; /* Ensure it's treated as a block for width */
-            width: 85%; /* Responsive width */
-            max-width: 350px; /* Max width */
-            text-decoration: none; /* For anchor tags if used */
-        }
-        .btn:active {
-            background-color: var(--classical-yellow) !important;
-            transform: translateY(3px);
-            box-shadow: 0 1px var(--accent-color);
-        }
-        .btn:disabled {
-            background-color: #ccc;
-            box-shadow: 0 4px #999;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        /* Bonus Button Style */
-        .btn.bonus-btn {
-            background-color: var(--bonus-color);
-            box-shadow: 0 4px var(--bonus-color-shadow);
-            color: white;
-        }
-        .btn.bonus-btn:active {
-            background-color: #9955e6 !important; /* Slightly lighter bonus color */
-            box-shadow: 0 1px var(--bonus-color-shadow);
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.85);
-            padding: 20px;
-            margin: 15px auto;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-            max-width: 450px;
-            width: 90%;
-            text-align: center;
-        }
-        
-        .hidden { display: none; }
-        
-        input[type="text"], input[type="number"] {
-            padding: 12px;
-            width: calc(100% - 24px); /* Account for padding */
-            margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 12px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden; /* To make rounded corners work */
-        }
-        th, td {
-            padding: 10px 8px;
-            border: 1px solid #eee;
-            text-align: center;
-        }
-        th {
-            background-color: #333;
-            color: white;
-            font-weight: bold;
-        }
-        tr:nth-child(even) { background-color: #f9f9f9; } /* Zebra striping for better readability */
-        
-        .pagination-ctrl {
-            margin-top: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            align-items: center;
-        }
-        .page-btn {
-            background-color: var(--text-dark);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            font-size: 13px;
-            transition: background-color 0.2s;
-        }
-        .page-btn:hover { background-color: #555; }
-        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        footer {
-
-background: #222;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 11px;
-            margin-top: auto; /* Pushes footer to the bottom */
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-        }
-        
-        /* Specific Styles */
-        #claim-btn-style { background: var(--reward-orange); box-shadow: 0 4px var(--reward-orange-dark); }
-        #claim-btn-style:active { background-color: var(--classical-yellow) !important; transform: translateY(2px); box-shadow: 0 1px var(--reward-orange-dark); }
-        .task-timer { color: #d32f2f; font-weight: bold; font-size: 13px; margin-top: 8px; }
-        .admin-approve-btn { background-color: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px; border: none; cursor: pointer; font-size: 11px; }
-        .admin-approve-btn:hover { background-color: #45a049; }
-    </style>
+  <style>
+    body{font-family:Arial;background:#020617;color:#e5e7eb;padding:15px}
+    button,input{width:100%;padding:10px;margin-top:8px}
+    table{width:100%;font-size:13px;margin-top:8px}
+    .row{display:flex;gap:8px;margin-top:8px}
+  </style>
 </head>
-<body onclick="document.body.classList.add('rainbow-mode')">
+<body>
 
-    <header>
-        <div id="userBar">👤 User: Loading...</div>
-        <div id="balanceDisplay">₱<span id="balanceVal">0.000</span></div>
-    </header>
+<h2>👤 <span id="username"></span></h2>
+<h3>💰 Balance: ₱<span id="balance">0.000</span></h3>
 
-    <!-- Home Page -->
-    <div id="page-home" class="container">
-        <h1>PAPERHOUSE INC</h1>
-        <p style="font-size: 1.1em;">Your Gateway to Exciting Rewards!</p>
-        <button class="btn" onclick="nav('page-signin')">🍍PAPERHOUSE Sign In🍍</button>
-        <button class="btn" onclick="nav('page-withdraw')">💸 WITHDRAW GCASH</button>
-        <br><br>
-        <button onclick="adminCheck()" style="opacity:0.2; border:none; background:none; font-size:10px; width:auto;">Admin Access</button>
-    </div>
+<button onclick="watchAd()">Watch Ad (+₱0.015)</button>
 
-    <!-- Sign In Tasks Page -->
-    <div id="page-signin" class="container hidden">
-        <button class="btn" onclick="nav('page-home')" style="font-size:12px; padding:5px 10px; width:100px;">⬅ Back</button>
-        
-        <h2>Daily Tasks</h2>
-        <div class="card">
-            <button class="btn" id="btn-taskT1" onclick="runTask('T1')">🍍Task #1🍍</button>
-            <div id="cooldownT1" class="task-timer"></div>
-            <button class="btn hidden" id="claim-T1" onclick="claim('T1', 0.025)" style="background: var(--reward-orange);">Claim ₱0.025</button>
-        </div>
-        <div class="card">
-            <button class="btn" id="btn-taskT2" onclick="runTask('T2')">🍍Task #2🍍</button>
-            <div id="cooldownT2" class="task-timer"></div>
-            <button class="btn hidden" id="claim-T2" onclick="claim('T2', 0.025)" style="background: var(--reward-orange);">Claim ₱0.025</button>
-        </div>
-        <div class="card">
-            <button class="btn" id="btn-taskT3" onclick="runTask('T3')">🍍Task #3🍍</button>
-            <div id="cooldownT3" class="task-timer"></div>
-            <button class="btn hidden" id="claim-T3" onclick="claim('T3', 0.020)" style="background: var(--reward-orange);">Claim ₱0.020</button>
-        </div>
+<h3>🏧 Withdraw (GCash)</h3>
+<input id="gcash" placeholder="GCash Number">
+<input id="amount" type="number" placeholder="Min ₱0.015">
+<button onclick="requestWithdraw()">Request Withdrawal</button>
 
-        <h2 style="margin-top: 30px;">Bonus Tasks</h2>
-        <div class="card">
-            <button class="btn bonus-btn" id="btn-taskB1" onclick="runTask('B1')">💎 Bonus Task #1 💎</button>
-            <div id="cooldownB1" class="task-timer"></div>
-            <button class="btn hidden" id="claim-B1" onclick="claim('B1', 0.025)" style="background: var(--reward-orange);">Claim ₱0.025</button>
-        </div>
-        <div class="card">
-            <button class="btn bonus-btn" id="btn-taskB2" onclick="runTask('B2')">💎 Bonus Task #2 💎</button>
-            <div id="cooldownB2" class="task-timer"></div>
-            <button class="btn hidden" id="claim-B2" onclick="claim('B2', 0.025)" style="background: var(--reward-orange);">Claim ₱0.025</button>
-        </div>
-        <d
+<h3>📜 Withdrawal History</h3>
+<table border="1">
+  <thead>
+    <tr><th>Date</th><th>GCash</th><th>Amount</th><th>Status</th></tr>
+  </thead>
+  <tbody id="history"></tbody>
+</table>
 
-iv class="card">
-            <button class="btn bonus-btn" id="btn-taskB3" onclick="runTask('B3')">💎 Bonus Task #3 💎</button>
-            <div id="cooldownB3" class="task-timer"></div>
-            <button class="btn hidden" id="claim-B3" onclick="claim('B3', 0.025)" style="background: var(--reward-orange);">Claim ₱0.025</button>
-        </div>
-    </div>
+<div class="row">
+  <button onclick="prevUserPage()">⬅ Prev</button>
+  <button onclick="nextUserPage()">Next ➡</button>
+</div>
 
-    <!-- Withdrawal Page -->
-    <div id="page-withdraw" class="container hidden">
-        <button class="btn" onclick="nav('page-home')" style="font-size:12px; padding:5px 10px; width:100px;">⬅ Back</button>
-        <div class="card">
-            <h3>GCASH Withdrawal</h3>
-            <p style="font-size: 0.9em; color: #d32f2f;">Minimum Withdrawal: ₱0.015</p>
-            <input type="text" id="wName" placeholder="GCash Full Name">
-            <input type="text" id="wNum" placeholder="GCash Number">
-            <input type="number" id="wAmt" placeholder="Amount (e.g. 0.015)" step="0.001">
-            <button class="btn" onclick="submitWithdraw()">Request Payout</button>
-        </div>
-        <div class="card">
-            <h4>My Withdrawal History</h4>
-            <table id="userWithdrawTable">
-                <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
-                <tbody></tbody>
-            </table>
-            <div class="pagination-ctrl">
-                <button class="page-btn" onclick="changeUserPage(false)">Previous</button>
-                <span id="userPageInfo">Page 1</span>
-                <button class="page-btn" onclick="changeUserPage(true)">Next</button>
-            </div>
-        </div>
-    </div>
+<hr>
 
-    <!-- Admin Dashboard -->
-    <div id="page-admin" class="container hidden">
-        <button class="btn" onclick="nav('page-home')" style="font-size:12px; padding:5px 10px; width:100px;">⬅ Close Admin</button>
-        <div class="card" style="max-width: 95%;">
-            <h3>Owner Withdrawal Dashboard</h3>
-            <table id="adminWithdrawTable">
-                <thead><tr><th>User</th><th>Details</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-                <tbody></tbody>
-            </table>
-            <div class="pagination-ctrl">
-                <button class="page-btn" onclick="changeAdminPage(false)">Previous</button>
-                <span id="adminPageInfo">Page 1</span>
-                <button class="page-btn" onclick="changeAdminPage(true)">Next</button>
-            </div>
-        </div>
-    </div>
+<button onclick="ownerLogin()">Owner Dashboard</button>
 
-    <footer>
-        <div id="footerClock">PAPERHOUSE INC | --/--/-- --:--:--</div>
-        otico.isai2@gmail.com
-    </footer>
+<div id="owner" style="display:none">
+  <h3>📊 Owner Dashboard</h3>
+  <p>Total Users: <span id="totalUsers">0</span></p>
+  <p>Total Withdrawn: ₱<span id="totalWithdraw">0</span></p>
+  <p>Total Pending: ₱<span id="totalPending">0</span></p>
 
-    <script type="module" src="app.js"></script>
+  <table border="1">
+    <thead>
+      <tr><th>User</th><th>GCash</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+    </thead>
+    <tbody id="adminTable"></tbody>
+  </table>
+
+  <div class="row">
+    <button onclick="prevAdminPage()">⬅ Prev</button>
+    <button onclick="nextAdminPage()">Next ➡</button>
+  </div>
+</div>
+
 </body>
 </html>
