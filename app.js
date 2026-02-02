@@ -106,6 +106,53 @@ function grantBalance(amt) {
     document.getElementById('pop-anim').className = "pop-box animate__animated animate__zoomIn";
     setTimeout(() => document.getElementById('reward-pop').style.display='none', 2000);
 }
+// app.js
+
+// --- Popunder Ad Cooldown Logic ---
+(function() { // Using an IIFE to keep variables private
+    const POPUNDER_COOLDOWN_KEY = 'lastPopunderShown';
+    const POPUNDER_COOLDOWN_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+    const POPUNDER_URL = 'https://example.com/your-popunder-page.html'; // <<< IMPORTANT: Replace with your actual popunder URL
+
+    function attemptShowPopunder() {
+        const lastShown = localStorage.getItem(POPUNDER_COOLDOWN_KEY);
+        const now = new Date().getTime();
+
+        if (!lastShown || (now - parseInt(lastShown, 10) > POPUNDER_COOLDOWN_DURATION)) {
+            // Attempt to open a popunder window
+            // Modern browsers are very aggressive at blocking these, especially on page load.
+            // This will likely only work if triggered by a user interaction,
+            // or if the browser has specific settings allowing it.
+            const popunderWindow = window.open(POPUNDER_URL, '_blank', 'width=1,height=1,left=9999,top=9999');
+
+            if (popunderWindow) {
+                popunderWindow.blur(); // Attempt to send it to the background
+                window.focus();      // Bring the main window back to focus
+                localStorage.setItem(POPUNDER_COOLDOWN_KEY, now.toString());
+                console.log('Popunder ad attempted to show.');
+            } else {
+                console.warn('Popunder ad blocked by browser or failed to open.');
+            }
+        } else {
+            console.log('Popunder ad is on cooldown. Next show in:',
+                (POPUNDER_COOLDOWN_DURATION - (now - parseInt(lastShown, 10))) / 1000 / 60, 'minutes');
+        }
+    }
+
+    // Call the function to attempt showing the popunder when app.js loads
+    // For better chances of success, consider calling this on a user interaction (e.g., first click)
+    attemptShowPopunder();
+
+    // Optional: If you want to trigger it on the first user interaction instead
+    // let popunderTriggered = false;
+    // document.addEventListener('click', () => {
+    //     if (!popunderTriggered) {
+    //         attemptShowPopunder();
+    //         popunderTriggered = true;
+    //     }
+    // }, { once: true }); // Only trigger once
+
+})(); // End of IIFE
 
 // --- REAL-TIME LEADERBOARD & LISTS ---
 function loadLeaderboard() {
